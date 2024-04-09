@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:password_vault/feature/home/favourites_dialog.dart';
 import 'package:password_vault/feature/widget_utils/custom_empty_state_illustartion.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
-import 'package:password_vault/service/route/bottom_nav_route.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);

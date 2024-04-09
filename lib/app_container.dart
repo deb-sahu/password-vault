@@ -32,7 +32,7 @@ class _PasswordVaultState extends State<PasswordVault> {
       localizationsDelegates: _getLocalizationsDelegates(),
       localeResolutionCallback: (locale, supportedLocales) => _getLocale(locale, supportedLocales),
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      darkTheme: AppTheme.lightTheme,
       builder: EasyLoading.init(),
       routerConfig: router,
     );

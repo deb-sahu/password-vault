@@ -1,29 +1,37 @@
 import 'package:password_vault/constants/common_exports.dart';
-import 'package:password_vault/feature/home/home_content.dart';
+import 'package:password_vault/feature/home/home.dart';
 import 'package:password_vault/feature/passwords/passwords.dart';
 import 'package:password_vault/feature/settings/settings.dart';
 import 'package:password_vault/feature/history/history.dart';
 import 'package:password_vault/feature/widget_utils/custom_icon.dart';
 import 'package:flutter/cupertino.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+class NavRoute extends StatefulWidget {
+  final int selectedIndex; // Add selectedIndex property
+
+ const NavRoute({Key? key, required this.selectedIndex}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _HomeState createState() => _HomeState();
+  _NavRouteState createState() => _NavRouteState();
 }
 
-class _HomeState extends State<Home> {
-  int _selectedIndex = 0;
+class _NavRouteState extends State<NavRoute> {
+  late int _selectedIndex;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    const HomeContent(),
+    const Home(),
     const Passwords(),
     const History(),
     const Settings()
     // Add your other page widgets here
   ];
+
+    @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.selectedIndex; // Initialize _selectedIndex from widget property
+  }
 
   void _onItemTapped(int index) {
     setState(() {

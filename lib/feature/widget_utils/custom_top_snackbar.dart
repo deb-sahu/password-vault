@@ -26,9 +26,9 @@ class CustomTopSnackbar {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: AppColor.greyColor,
-                  blurRadius: 10.0,
-                  spreadRadius: 1,
+                  color: AppColor.whiteColor,
+                  blurRadius: 0.5,
+                  spreadRadius: 0.5,
                 ),
               ],
             ),
@@ -39,7 +39,7 @@ class CustomTopSnackbar {
                   Icon(
                     leadingIcon,
                     color: textColor,
-                    size: height * 0.03,
+                    size: height * 0.025,
                   ),
                 if (leadingIcon != null) SizedBox(width: width * 0.02),
                 Flexible(

@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:password_vault/cache/cache_manager.dart';
+import 'package:password_vault/cache/hive_models/favourites_model.dart';
+import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/service/singletons/camera_description_helper.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
@@ -31,6 +34,12 @@ void main() async {
   }
   var directory = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(directory.path);
+
+   Hive.registerAdapter(PasswordModelAdapter());
+   Hive.registerAdapter(FavoritesModelAdapter());
+
+  await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
+  await CacheManager<FavoritesModel>().getBoxAsync(CacheTypes.favouritesInfoBox.name);
 
   HttpOverrides.global = MyHttpOverrides();
   await SystemChrome.setPreferredOrientations([

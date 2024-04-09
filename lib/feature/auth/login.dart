@@ -1,9 +1,4 @@
-import 'dart:async';
-import 'dart:developer' as developer;
 import 'package:password_vault/constants/common_exports.dart';
-import 'package:password_vault/service/api_service.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/services.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -14,49 +9,14 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
-  final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _streamSubscription;
-
   @override
   void initState() {
     super.initState();
-    initConnectivity();
-
-    _streamSubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
   }
 
   @override
   void dispose() {
-    _streamSubscription.cancel();
     super.dispose();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initConnectivity() async {
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    late ConnectivityResult result;
-    try {
-      result = await _connectivity.checkConnectivity();
-    } on PlatformException catch (e) {
-      // ignore: avoid_print
-      developer.log('Couldn\'t check connectivity status', error: e);
-      return;
-    }
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionStatus(result);
-  }
-
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    setState(() {
-      _connectionStatus = result;
-    });
   }
 
   @override
@@ -119,18 +79,8 @@ class _LoginState extends State<Login> {
                   children: [
                     ElevatedButton(
                       style: AppStyles.buttonPrimaryElevated,
-                      onPressed: () async {
-                        if (_connectionStatus == ConnectivityResult.none) {
-                          AppStyles.showError(context, 'No internet connection',
-                              duration: const Duration(seconds: 5));
-                          return;
-                        }
-                        final result = await DataApiService().getData();
-                        if (result.isNotEmpty && context.mounted) {
-                          //AppStyles.showSuccess(context, 'Logged in successfully');
-                          // Navigate to the main app content (Home page)
-                          GoRouter.of(context).go('/homePage');
-                        }
+                      onPressed: () {
+                        GoRouter.of(context).go('/homePage');
                       },
                       child: Text(
                         'Continue',
@@ -139,12 +89,12 @@ class _LoginState extends State<Login> {
                     ),
                   ],
                 ),
-                  SizedBox(height: height * 0.02),
-                  Text(
-                   'Let\'s get started!',
-                   style: AppStyles.customText(context, sizeFactor: 0.039, family: 'OpenSans'),
-                   textAlign: TextAlign.center,
-                 )
+                SizedBox(height: height * 0.02),
+                Text(
+                  'Let\'s get started!',
+                  style: AppStyles.customText(context, sizeFactor: 0.039, family: 'OpenSans'),
+                  textAlign: TextAlign.center,
+                )
               ],
             ),
           ),

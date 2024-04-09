@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:password_vault/cache/cache_manager.dart';
 import 'package:password_vault/cache/hive_models/favourites_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/service/singletons/camera_description_helper.dart';
-import 'package:device_preview/device_preview.dart';
+//import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +33,16 @@ void main() async {
     // ignore: avoid_print
     print('Error in fetching required permissions: $e');
   }
+
+  // To disable runtime fetching of Google Fonts
+  GoogleFonts.config.allowRuntimeFetching = false;
+
+  // To add a custom license
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString('google_fonts/OFL.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  });
+  
   var directory = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(directory.path);
 
@@ -48,10 +59,10 @@ void main() async {
   ]);
 
   // Uncomment the line below to enable device preview
-  runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const PasswordVault()));
+  //runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const PasswordVault()));
 
   // Uncomment the line below to disable device preview
-  //runApp(const PasswordVault());
+  runApp(const PasswordVault());
 }
 
 Future<void> requestPermissions(List<Permission> permissions) async {

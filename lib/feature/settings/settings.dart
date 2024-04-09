@@ -1,6 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
 
@@ -49,7 +47,7 @@ class _SettingsState extends State<Settings> {
                 },
               ),
             ),
-            SizedBox(height: height * 0.58),
+            SizedBox(height: height * 0.62),
             SizedBox(
               width: double.infinity,
               height: height * 0.06,

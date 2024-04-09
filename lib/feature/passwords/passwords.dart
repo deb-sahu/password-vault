@@ -1,8 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:password_vault/feature/widget_utils/custom_top_snackbar.dart';
+import 'package:password_vault/cache/cache_manager.dart';
+import 'package:password_vault/feature/passwords/add_password_dialog.dart';
+import 'package:password_vault/cache/hive_models/passwords_model.dart';
+import 'package:password_vault/feature/passwords/delete_confirmation_dialog.dart';
+import 'package:password_vault/feature/widget_utils/custom_empty_state_illustartion.dart';
+import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../../constants/common_exports.dart';
 
 class Passwords extends StatefulWidget {
@@ -14,19 +18,82 @@ class Passwords extends StatefulWidget {
 }
 
 class _PasswordsState extends State<Passwords> {
-  bool _isObscured = true;
   late TextEditingController _passwordController;
+  late TextEditingController _titleController;
+  late TextEditingController _linkController;
+  late TextEditingController _descriptionController;
+  late bool _isObscured = true;
+  late List<PasswordModel> _passwords = [];
 
   @override
   void initState() {
     super.initState();
     _passwordController = TextEditingController();
+    _titleController = TextEditingController();
+    _linkController = TextEditingController();
+    _descriptionController = TextEditingController();
+    _loadPasswords();
   }
 
   @override
   void dispose() {
     _passwordController.dispose();
+    _titleController.dispose();
+    _linkController.dispose();
+    _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadPasswords() async {
+    try {
+      var passwordsInfoBox =
+          await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
+      _passwords = passwordsInfoBox.values.toList();
+    } catch (e) {
+      // Handle error
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _deletePassword(String passwordId) {
+    CacheService().deletePasswordRecord(passwordId).then((success) {
+      if (success) {
+        setState(() {
+          _passwords.removeWhere((password) => password.passwordId == passwordId);
+        });
+        AppStyles.showSuccess(context, 'Password deleted successfully');
+      } else {
+        AppStyles.showError(context, 'Error deleting password');
+      }
+    });
+  }
+
+  void _showDeleteConfirmation(String passwordId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return DeleteConfirmationDialog(
+          passwordId: passwordId,
+          onDelete: () => _deletePassword(passwordId),
+        );
+      },
+    );
+  }
+
+  void _editPassword(PasswordModel password) {
+    showDialog(
+      context: context,
+      builder: (context) => AddPasswordDialog(
+        passwordModel: password,
+        onSuccess: _reloadPasswords,
+      ),
+    );
+  }
+
+  void _reloadPasswords() {
+    _loadPasswords();
   }
 
   void _togglePasswordVisibility() {
@@ -37,19 +104,20 @@ class _PasswordsState extends State<Passwords> {
 
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: _passwordController.text));
-    CustomTopSnackbar.show(
-      context, 'Password copied to clipboard', leadingIcon: Icons.check_circle_rounded, textColor: AppColor.whiteColor, backgroundColor: AppColor.primaryColor,
-    );
+    AppStyles.showSuccess(context, 'Password copied to clipboard');
   }
 
-void _openWebPage() async {
-  final Uri url = Uri.parse('https://www.google.com');
-      if(await canLaunchUrl(url)){
-        await launchUrl(url,mode: LaunchMode.inAppWebView, webViewConfiguration: const WebViewConfiguration(enableJavaScript: true));
-      }else {
-        throw 'Could not launch $url';
-      }
-}
+  void _openWebPage(String url) async {
+    String formattedUrl = url.startsWith('http') ? url : 'https://$url';
+    var uri = Uri.parse(formattedUrl); // Convert string to Uri
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri,
+          mode: LaunchMode.inAppWebView,
+          webViewConfiguration: const WebViewConfiguration(enableJavaScript: true));
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,33 +125,10 @@ void _openWebPage() async {
     var width = AppStyles.viewWidth(context);
     bool isPortrait = AppStyles.isPortraitMode(context);
 
-    // Sample data for icons and titles
-    List<Map<String, dynamic>> items = [
-      {'icon': CupertinoIcons.shield_lefthalf_fill, 'title': 'Password 1'},
-      {'icon': CupertinoIcons.shield_lefthalf_fill, 'title': 'Password 2'},
-      {'icon': CupertinoIcons.shield_lefthalf_fill, 'title': 'Password 3'},
-      {'icon': CupertinoIcons.shield_lefthalf_fill, 'title': 'Password 4'},
-      {'icon': CupertinoIcons.shield_lefthalf_fill, 'title': 'Password 5'},
-    ];
-
     return Scaffold(
-      //backgroundColor: AppColor.lightGrey,
       appBar: AppBar(
         toolbarHeight: AppStyles.appBarHeight(context),
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Navigate to notification page
-              GoRouter.of(context).go('/notifications');
-            },
-            icon: Icon(
-              CupertinoIcons.heart_solid,
-              size: AppStyles.appIconSize(context),
-              color: AppColor.appColor,
-            ),
-          )
-        ],
         title: Text(
           'Passwords',
           style: AppStyles.appHeaderTextStyle(context, isPortrait),
@@ -94,7 +139,12 @@ void _openWebPage() async {
         width: AppStyles.fabSize(context),
         child: FloatingActionButton(
           onPressed: () {
-            // Action dialog to add new inspection or risk
+            showDialog(
+              context: context,
+              builder: (context) => AddPasswordDialog(
+                onSuccess: _reloadPasswords,
+              ),
+            );
           },
           backgroundColor: AppColor.appColor,
           splashColor: AppColor.themeBlueLight,
@@ -104,95 +154,130 @@ void _openWebPage() async {
           ),
           child: Icon(
             CupertinoIcons.add,
-            size: AppStyles.iconSize(context), // Increasing icon size
+            size: AppStyles.iconSize(context),
           ),
         ),
       ),
       body: SafeArea(
-        minimum: EdgeInsets.all(width * 0.04),
+        minimum: EdgeInsets.all(width * 0.02),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ExpansionTile(
-                      shape: BeveledRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      leading: Icon(items[index]['icon'], size: width * 0.05,),
-                      title: Text(
-                        items[index]['title'],
-                        style: AppStyles.customText(
-                          context,
-                          sizeFactor: 0.038,
-                          color: AppColor.grey_800,
-                          weight: FontWeight.w600,
-                        ),
-                      ),
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(width * 0.02),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              child: _passwords.isEmpty
+                  ? const EmptyStateIllustration(
+                      svgAsset: 'assets/images/svg/illustration3.svg',
+                      text: 'Uh oh! No passwords saved yet',
+                    )
+                  : ListView.builder(
+                      itemCount: _passwords.length,
+                      itemBuilder: (context, index) {
+                        var password = _passwords[index];
+                        return Card(
+                          child: ExpansionTile(
+                            shape: BeveledRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            leading: Icon(
+                              CupertinoIcons.shield_lefthalf_fill,
+                              size: width * 0.05,
+                            ),
+                            title: Text(
+                              password.passwordTitle,
+                              style: AppStyles.customText(
+                                context,
+                                sizeFactor: 0.04,
+                                color: AppColor.grey_800,
+                                weight: FontWeight.w600,
+                              ),
+                            ),
                             children: [
-                              GestureDetector(
-                                onTap: _openWebPage,
-                                child: Text(
-                                  'Site: Sample Site',
-                                  style: AppStyles.customText(
-                                    context,
-                                    sizeFactor: 0.038,
-                                    weight: FontWeight.w600,
-                                    color: AppColor.themeBlueMid, // Change color to indicate it's a link
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: height * 0.01),
-                              TextField(
-                                style: AppStyles.customText(context, sizeFactor: 0.03),
-                                controller: _passwordController,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton(
-                                        onPressed: _copyToClipboard,
-                                        icon: const Icon(Icons.copy),
+                              Padding(
+                                padding: EdgeInsets.all(width * 0.02),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _openWebPage(password.siteLink),
+                                      child: Text(
+                                        password.siteLink,
+                                        style: AppStyles.customText(
+                                          context,
+                                          sizeFactor: 0.038,
+                                          weight: FontWeight.w600,
+                                          color: AppColor
+                                              .themeBlueMid, // Color to indicate it's a link
+                                        ),
                                       ),
-                                      IconButton(
-                                        onPressed: _togglePasswordVisibility,
-                                        icon: _isObscured
-                                            ? const Icon(Icons.visibility)
-                                            : const Icon(Icons.visibility_off),
+                                    ),
+                                    SizedBox(height: height * 0.02),
+                                    TextField(
+                                      style: AppStyles.customText(context, sizeFactor: 0.03),
+                                      controller:
+                                          TextEditingController(text: password.savedPassword),
+                                      decoration: InputDecoration(
+                                        labelText: 'Password',
+                                        border: const OutlineInputBorder(),
+                                        suffixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            IconButton(
+                                              onPressed: _copyToClipboard,
+                                              icon: const Icon(Icons.copy),
+                                            ),
+                                            IconButton(
+                                              onPressed: _togglePasswordVisibility,
+                                              icon: _isObscured
+                                                  ? const Icon(Icons.visibility)
+                                                  : const Icon(Icons.visibility_off),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                                obscureText: _isObscured,
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                style: AppStyles.customText(context, sizeFactor: 0.03),
-                                decoration: const InputDecoration(
-                                  labelText: 'Description',
-                                  border: OutlineInputBorder(),
+                                      obscureText: _isObscured,
+                                      readOnly: true,
+                                    ),
+                                    SizedBox(height: height * 0.02),
+                                    TextField(
+                                      controller:
+                                          TextEditingController(text: password.passwordDescription),
+                                      style: AppStyles.customText(context, sizeFactor: 0.03),
+                                      decoration: const InputDecoration(
+                                        labelText: 'Description',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      readOnly: true,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            size: width * 0.051,
+                                          ),
+                                          onPressed: () => _showDeleteConfirmation(password
+                                              .passwordId), // Show confirmation before deleting
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.edit,
+                                            size: width * 0.05,
+                                          ),
+                                          onPressed: () => _editPassword(password),
+                                        ),
+                                      ],
+                                    )
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

@@ -86,7 +86,7 @@ class _LoginState extends State<Login> {
         Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
-            //automaticallyImplyLeading: false, // Commented to go back to main content without login
+            automaticallyImplyLeading: false, // Commented to go back to main content without login
             backgroundColor: Colors.transparent,
           ),
           body: SafeArea(
@@ -127,7 +127,7 @@ class _LoginState extends State<Login> {
                         }
                         final result = await DataApiService().getData();
                         if (result.isNotEmpty && context.mounted) {
-                          AppStyles.showSuccess(context, 'Logged in successfully');
+                          //AppStyles.showSuccess(context, 'Logged in successfully');
                           // Navigate to the main app content (Home page)
                           GoRouter.of(context).go('/homePage');
                         }

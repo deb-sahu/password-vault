@@ -52,7 +52,7 @@ class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        backgroundColor: AppColor.greyColor,
+        backgroundColor: AppColor.appColor,
         elevation: 0.0,
         padding: const EdgeInsets.all(10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -64,7 +64,7 @@ class AppTheme {
       style: TextButton.styleFrom(
         animationDuration: const Duration(milliseconds: 400),
         elevation: 0.0,
-        backgroundColor: AppColor.whiteColor,
+        backgroundColor: AppColor.appColor,
         side: BorderSide(color: AppColor.appColor, width: 0.4),
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -76,7 +76,7 @@ class AppTheme {
       style: TextButton.styleFrom(
         animationDuration: const Duration(milliseconds: 400),
         elevation: 0.0,
-        backgroundColor: AppColor.greyColor,
+        backgroundColor: AppColor.appColor,
         side: BorderSide(color: AppColor.greyDarkColor, width: 0.2),
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),

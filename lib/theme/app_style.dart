@@ -14,9 +14,10 @@ class AppStyles {
   }
 
   static TextStyle headline2(BuildContext context, bool isPortrait) {
-    return GoogleFonts.roboto(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.05 : MediaQuery.of(context).size.height * 0.07,
-      fontWeight: FontWeight.w600,
+    return GoogleFonts.coveredByYourGrace(
+      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.09 : MediaQuery.of(context).size.height * 0.1,
+      fontWeight: FontWeight.w500,
+      color: AppColor.grey_700,
     );
   }
 
@@ -28,18 +29,18 @@ class AppStyles {
     );
   }
 
-  static TextStyle greyBoldText(BuildContext context, bool isPortrait) {
-    return GoogleFonts.roboto(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.04 : MediaQuery.of(context).size.height * 0.06,
+  static TextStyle primaryBoldText(BuildContext context, bool isPortrait) {
+    return GoogleFonts.scada(
+      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.05 : MediaQuery.of(context).size.height * 0.07,
       fontWeight: FontWeight.w700,
-      color: AppColor.ultraDarkGrey,
+      color: AppColor.primaryColor,
     );
   }
 
   static TextStyle appHeaderTextStyle(BuildContext context, bool isPortrait) {
-    return GoogleFonts.cabinCondensed(
+    return GoogleFonts.scada(
       fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.05 : MediaQuery.of(context).size.height * 0.07,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w800,
       color: AppColor.appColor,
     );
   }
@@ -166,7 +167,7 @@ class AppStyles {
 
   static ButtonStyle onlyTextButton = ButtonStyle(
     foregroundColor: MaterialStateProperty.all(AppColor.blue_900),
-    backgroundColor: MaterialStateProperty.all(AppColor.lightGrey),
+    backgroundColor: MaterialStateProperty.all(AppColor.grey_200),
     side: MaterialStateProperty.all(BorderSide(
       color: AppColor.lightGrey,
     )),
@@ -175,11 +176,11 @@ class AppStyles {
   // Elevated Button Styles
   static ButtonStyle buttonPrimaryElevated = ElevatedButton.styleFrom(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0), // Add rounded corners
+        borderRadius: BorderRadius.circular(10.0), 
       ),
-      padding: const EdgeInsets.symmetric(vertical: 16.0), // Adjust button height
-      minimumSize: const Size(double.infinity, 48.0), // Make button full width
-      textStyle: const TextStyle(fontSize: 16.0), // Adjust text size
+      padding: const EdgeInsets.symmetric(vertical: 16.0), 
+      minimumSize: const Size(double.infinity, 48.0), 
+      textStyle: const TextStyle(fontSize: 16.0),
       backgroundColor: AppColor.appColor,
       foregroundColor: AppColor.whiteColor);
 
@@ -199,9 +200,8 @@ class AppStyles {
     CustomTopSnackbar.show(
       context,
       message,
-      backgroundColor: AppColor.successGreenLight,
-      borderColor: AppColor.whiteColor,
-      textColor: AppColor.successGreen,
+      backgroundColor: AppColor.primaryColor,
+      textColor: AppColor.whiteColor,
       leadingIcon: CupertinoIcons.checkmark_alt_circle_fill,
       duration: duration,
     );
@@ -212,9 +212,8 @@ class AppStyles {
     CustomTopSnackbar.show(
       context,
       message,
-      backgroundColor: AppColor.errorRedLight,
-      borderColor: AppColor.whiteColor,
-      textColor: AppColor.errorRed,
+      backgroundColor: AppColor.primaryColor,
+      textColor: AppColor.whiteColor,
       leadingIcon: CupertinoIcons.exclamationmark_triangle_fill,
       duration: duration,
     );

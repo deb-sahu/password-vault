@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:flutter/cupertino.dart';
@@ -100,29 +101,17 @@ class _HomeState extends State<Home> {
                       ),
                     ],
                   ),
-                  /*  TextButton(
-                    onPressed: () => {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NavRoute(
-                            selectedIndex: 1,
-                          ),
-                        ),
-                      ),
-                    },
-                    style: AppStyles.onlyTextButton,
-                    child: Text(
-                      'View All',
-                      style: AppStyles.customText(
-                        context,
-                        sizeFactor: 0.035,
-                        weight: FontWeight.w500,
-                        color: AppColor.blue_900,
-                      ),
-                    ),
-                  ) */
                 ],
+              ),
+              SizedBox(height: height * 0.015),
+              Text(
+                'Tap on the cards to copy password',
+                style: AppStyles.customText(
+                  context,
+                  sizeFactor: 0.03,
+                  weight: FontWeight.w500,
+                  color: AppColor.blue_900,
+                ),
               ),
             },
             SizedBox(height: height * 0.015),
@@ -134,38 +123,45 @@ class _HomeState extends State<Home> {
                   itemCount: favoritePasswords.length,
                   scrollDirection: Axis.vertical,
                   itemBuilder: (BuildContext context, int index) {
-                    return Container(
-                      margin: EdgeInsets.only(bottom: height * 0.01),
-                      width: width * 0.5,
-                      decoration: BoxDecoration(
-                        color: Colors.white, // Background color of the container
-                        borderRadius: BorderRadius.circular(8.0),
-                        backgroundBlendMode: BlendMode.srcOver,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColor.midGrey.withOpacity(0.5), // Color of the shadow
-                            spreadRadius: 0.5,
-                            blurRadius: 1.5,
-                            offset: Offset.fromDirection(2, 1),
-                            blurStyle: BlurStyle.solid,
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(width * 0.04),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              favoritePasswords[index].passwordTitle,
-                              style: AppStyles.customText(context, weight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              favoritePasswords[index].passwordDescription,
-                              style: AppStyles.customText(context),
+                    return GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(
+                            ClipboardData(text: favoritePasswords[index].savedPassword));
+                        AppStyles.showSuccess(context, 'Password copied to clipboard');
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: height * 0.01),
+                        width: width * 0.5,
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Background color of the container
+                          borderRadius: BorderRadius.circular(8.0),
+                          backgroundBlendMode: BlendMode.srcOver,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColor.midGrey.withOpacity(0.5), // Color of the shadow
+                              spreadRadius: 0.5,
+                              blurRadius: 1.5,
+                              offset: Offset.fromDirection(2, 1),
+                              blurStyle: BlurStyle.solid,
                             ),
                           ],
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(width * 0.04),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                favoritePasswords[index].passwordTitle,
+                                style: AppStyles.customText(context, weight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                favoritePasswords[index].passwordDescription,
+                                style: AppStyles.customText(context),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

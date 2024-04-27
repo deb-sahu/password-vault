@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_vault/cache/cache_manager.dart';
 import 'package:password_vault/cache/hive_models/favourites_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
+import 'package:password_vault/cache/hive_models/system_preferences_model.dart';
 import 'package:password_vault/service/singletons/camera_description_helper.dart';
 //import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
@@ -42,15 +44,17 @@ void main() async {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  
+
   var directory = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(directory.path);
 
-   Hive.registerAdapter(PasswordModelAdapter());
-   Hive.registerAdapter(FavoritesModelAdapter());
+  Hive.registerAdapter(PasswordModelAdapter());
+  Hive.registerAdapter(FavoritesModelAdapter());
+  Hive.registerAdapter(SystemPreferencesModelAdapter());
 
   await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
   await CacheManager<FavoritesModel>().getBoxAsync(CacheTypes.favouritesInfoBox.name);
+  await CacheManager<SystemPreferencesModel>().getBoxAsync(CacheTypes.systemInfoBox.name);
 
   HttpOverrides.global = MyHttpOverrides();
   await SystemChrome.setPreferredOrientations([
@@ -62,7 +66,12 @@ void main() async {
   //runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const PasswordVault()));
 
   // Uncomment the line below to disable device preview
-  runApp(const PasswordVault());
+
+  runApp(
+    const ProviderScope(
+      child: PasswordVault(),
+    ),
+  );
 }
 
 Future<void> requestPermissions(List<Permission> permissions) async {

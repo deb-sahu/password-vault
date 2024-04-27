@@ -1,4 +1,3 @@
-
 import 'package:password_vault/constants/common_exports.dart';
 
 class EmptyStateIllustration extends StatelessWidget {
@@ -8,8 +7,8 @@ class EmptyStateIllustration extends StatelessWidget {
   const EmptyStateIllustration({
     required this.svgAsset,
     required this.text,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
 @override
 Widget build(BuildContext context) {

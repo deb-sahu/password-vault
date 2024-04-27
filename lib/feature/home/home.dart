@@ -1,33 +1,52 @@
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:password_vault/app_container.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:password_vault/feature/home/favourites_dialog.dart';
+import 'package:password_vault/feature/passwords/passwords.dart';
+import 'package:password_vault/feature/settings/clear_data_dialog.dart';
+import 'package:password_vault/feature/settings/settings.dart';
 import 'package:password_vault/feature/widget_utils/custom_empty_state_illustartion.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
+import 'package:password_vault/service/singletons/theme_change_manager.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+class Home extends ConsumerStatefulWidget {
+  final List<PasswordModel>? favoritePasswords;
+  const Home({super.key, this.favoritePasswords});
 
   @override
   // ignore: library_private_types_in_public_api
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends ConsumerState<Home> {
   List<PasswordModel> favoritePasswords = [];
-
   @override
   void initState() {
     super.initState();
-    loadFavoritePasswords();
+    _loadFavourites();
   }
 
-  void loadFavoritePasswords() async {
-    List<PasswordModel> passwords = await CacheService().getFavouritesData();
-    setState(() {
-      favoritePasswords = passwords;
-    });
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> _loadFavourites() async {
+    try {
+      favoritePasswords = await CacheService().getFavouritesData();
+      ref.read(deletePasswordNotifierProvider.notifier).update((state) => false);
+      ref.read(changeFavoritesdNotifierProvider.notifier).update((state) => false);
+      ref.read(clearAllDataNotifierProvider.notifier).update((state) => false);
+      ref.read(importChangeProvider.notifier).update((state) => false);
+    } catch (e) {
+      favoritePasswords = [];
+    }
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -35,6 +54,14 @@ class _HomeState extends State<Home> {
     var height = AppStyles.viewHeight(context);
     var width = AppStyles.viewWidth(context);
     bool isPortrait = AppStyles.isPortraitMode(context);
+    final themeChange = ref.watch(themeChangeProvider);
+    if (ref.watch(deletePasswordNotifierProvider) ||
+        ref.watch(changeFavoritesdNotifierProvider) ||
+        ref.watch(clearAllDataNotifierProvider) ||
+        ref.watch(importChangeProvider)) {
+      _loadFavourites();
+    }
+    ThemeChangeService().initializeThemeChange(ref, themeChange);
 
     return Scaffold(
       appBar: AppBar(
@@ -80,6 +107,9 @@ class _HomeState extends State<Home> {
                           context,
                           sizeFactor: 0.038,
                           weight: FontWeight.w600,
+                          color: ThemeChangeService().getThemeChangeValue()
+                              ? AppColor.whiteColor
+                              : AppColor.blackColor,
                         ),
                       ),
                       SizedBox(
@@ -90,7 +120,9 @@ class _HomeState extends State<Home> {
                         width: width * 0.055,
                         child: Badge.count(
                           count: favoritePasswords.length,
-                          backgroundColor: AppColor.darkBlue,
+                          backgroundColor: ThemeChangeService().getThemeChangeValue()
+                              ? AppColor.primaryColor
+                              : AppColor.darkBlue,
                           textColor: AppColor.whiteColor,
                           textStyle: AppStyles.customText(
                             context,
@@ -106,16 +138,17 @@ class _HomeState extends State<Home> {
               SizedBox(height: height * 0.015),
               Text(
                 'Tap on the cards to copy password',
+                textAlign: TextAlign.start,
                 style: AppStyles.customText(
                   context,
                   sizeFactor: 0.03,
                   weight: FontWeight.w500,
-                  color: AppColor.blue_900,
+                  color: ThemeChangeService().getThemeChangeValue()
+                      ? AppColor.primaryColor
+                      : AppColor.blue_900,
                 ),
               ),
-            },
-            SizedBox(height: height * 0.015),
-            if (favoritePasswords.isNotEmpty) ...{
+              SizedBox(height: height * 0.015),
               SizedBox(
                 width: width,
                 height: isPortrait ? height * 0.5 : height * 0.2,
@@ -133,12 +166,16 @@ class _HomeState extends State<Home> {
                         margin: EdgeInsets.only(bottom: height * 0.01),
                         width: width * 0.5,
                         decoration: BoxDecoration(
-                          color: Colors.white, // Background color of the container
+                          color: ThemeChangeService().getThemeChangeValue()
+                              ? AppColor.grey_800
+                              : Colors.white, // Background color of the container
                           borderRadius: BorderRadius.circular(8.0),
                           backgroundBlendMode: BlendMode.srcOver,
                           boxShadow: [
                             BoxShadow(
-                              color: AppColor.midGrey.withOpacity(0.5), // Color of the shadow
+                              color: ThemeChangeService().getThemeChangeValue()
+                                  ? AppColor.blackColor
+                                  : AppColor.midGrey.withOpacity(0.5), // Color of the shadow
                               spreadRadius: 0.5,
                               blurRadius: 1.5,
                               offset: Offset.fromDirection(2, 1),
@@ -153,12 +190,19 @@ class _HomeState extends State<Home> {
                             children: [
                               Text(
                                 favoritePasswords[index].passwordTitle,
-                                style: AppStyles.customText(context, weight: FontWeight.bold),
+                                style: AppStyles.customText(context,
+                                    weight: FontWeight.bold,
+                                    color: ThemeChangeService().getThemeChangeValue()
+                                        ? AppColor.whiteColor
+                                        : AppColor.blackColor),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: height * 0.01),
                               Text(
                                 favoritePasswords[index].passwordDescription,
-                                style: AppStyles.customText(context),
+                                style: AppStyles.customText(context,
+                                    color: ThemeChangeService().getThemeChangeValue()
+                                        ? AppColor.whiteColor
+                                        : AppColor.blackColor),
                               ),
                             ],
                           ),

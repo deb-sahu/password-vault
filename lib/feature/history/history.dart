@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:password_vault/feature/widget_utils/custom_empty_state_illustartion.dart';
 
 class History extends StatelessWidget {
-  const History({Key? key}) : super(key: key);
+  const History({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -124,9 +124,10 @@ class AppTheme {
     useMaterial3: true,
     primarySwatch: AppColor.darkThemeColors,
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    scaffoldBackgroundColor: AppColor.blackColor,
     fontFamily: 'FontRegular',
     textTheme: const TextTheme(),
-    primaryIconTheme: IconThemeData(color: AppColor.appColor, size: 25),
+    primaryIconTheme: IconThemeData(color: AppColor.primaryColor, size: 25),
     colorScheme: ColorScheme.dark(
       primary: AppColor.themeWhiteMid,
     ),
@@ -144,7 +145,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: AppColor.greyColor, width: 1),
+        borderSide: BorderSide(color: AppColor.primaryColor, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -152,6 +153,7 @@ class AppTheme {
       ),
     ),
     appBarTheme: AppBarTheme(
+      backgroundColor: AppColor.grey_800,
       centerTitle: false,
       elevation: 0.0,
       iconTheme: const IconThemeData(color: Colors.white),
@@ -165,7 +167,7 @@ class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        backgroundColor: Colors.grey.withOpacity(0.4),
+        backgroundColor: AppColor.appColor,
         elevation: 0.0,
         padding: const EdgeInsets.all(10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -194,7 +196,7 @@ class AppTheme {
       style: TextButton.styleFrom(
         animationDuration: const Duration(milliseconds: 400),
         elevation: 0.0,
-        backgroundColor: Colors.grey.withOpacity(0.3),
+        backgroundColor: AppColor.appColor,
         side: BorderSide(color: AppColor.greyDarkColor, width: 0.2),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -204,7 +206,7 @@ class AppTheme {
     ),
     iconTheme: const IconThemeData(color: Colors.white),
     cardTheme: CardTheme(
-      color: AppColor.grey_200,
+      color: AppColor.grey_800,
       shadowColor: Colors.grey[400],
       elevation: 2.0,
       surfaceTintColor: Colors.white,
@@ -214,9 +216,11 @@ class AppTheme {
       ),
     ),
     listTileTheme: ListTileThemeData(
+      textColor: Colors.white,
       iconColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       style: ListTileStyle.drawer,
+      tileColor: AppColor.grey_800,
       minLeadingWidth: 10,
       enableFeedback: true,
       shape: RoundedRectangleBorder(
@@ -226,11 +230,12 @@ class AppTheme {
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       selectedItemColor: Colors.white,
       selectedLabelStyle: const TextStyle(fontSize: 16),
+       backgroundColor: AppColor.grey_800,
       enableFeedback: true,
       type: BottomNavigationBarType.shifting,
       elevation: 5.0,
-      selectedIconTheme: const IconThemeData(color: Colors.white),
-      unselectedIconTheme: IconThemeData(color: AppColor.greyDarkColor),
+      selectedIconTheme: IconThemeData(color: AppColor.appColor),
+      unselectedIconTheme: IconThemeData(color: AppColor.grey_800),
     ),
     iconButtonTheme: IconButtonThemeData(
       style: IconButton.styleFrom(

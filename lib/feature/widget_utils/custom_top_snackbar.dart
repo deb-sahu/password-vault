@@ -26,7 +26,7 @@ class CustomTopSnackbar {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: AppColor.whiteColor,
+                  color: AppColor.appColor.withOpacity(0.2),
                   blurRadius: 0.5,
                   spreadRadius: 0.5,
                 ),

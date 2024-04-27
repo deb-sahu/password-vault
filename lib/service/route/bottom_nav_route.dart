@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:password_vault/app_container.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:password_vault/feature/home/home.dart';
 import 'package:password_vault/feature/passwords/passwords.dart';
@@ -5,20 +7,12 @@ import 'package:password_vault/feature/settings/settings.dart';
 import 'package:password_vault/feature/history/history.dart';
 import 'package:password_vault/feature/widget_utils/custom_icon.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:password_vault/service/singletons/theme_change_manager.dart';
 
-class NavRoute extends StatefulWidget {
-  final int selectedIndex; // Add selectedIndex property
-
- const NavRoute({Key? key, required this.selectedIndex}) : super(key: key);
-
-  @override
-  // ignore: library_private_types_in_public_api
-  _NavRouteState createState() => _NavRouteState();
-}
-
-class _NavRouteState extends State<NavRoute> {
-  late int _selectedIndex;
-
+final bottomNavIndexProvider = StateProvider((ref) => 0);
+class NavRoute extends ConsumerWidget {
+ const NavRoute({super.key});
+  
   static final List<Widget> _widgetOptions = <Widget>[
     const Home(),
     const Passwords(),
@@ -27,23 +21,15 @@ class _NavRouteState extends State<NavRoute> {
     // Add your other page widgets here
   ];
 
-    @override
-  void initState() {
-    super.initState();
-    _selectedIndex = widget.selectedIndex; // Initialize _selectedIndex from widget property
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(bottomNavIndexProvider);
+    final themeChange = ref.watch(themeChangeProvider);
+    ThemeChangeService().initializeThemeChange(ref, themeChange);
+
     return Scaffold(
       body: IndexedStack(
-        index: _selectedIndex,
+        index: currentIndex,
         children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -52,7 +38,7 @@ class _NavRouteState extends State<NavRoute> {
             icon: CustomIcon(
             selectedIcon: CupertinoIcons.house_alt_fill,
             unselectedIcon: CupertinoIcons.house_alt,
-            isSelected: _selectedIndex == 0,
+            isSelected: currentIndex == 0,
           ),
             label: 'Home',
           ),
@@ -60,7 +46,7 @@ class _NavRouteState extends State<NavRoute> {
             icon: CustomIcon(
             selectedIcon: CupertinoIcons.checkmark_shield_fill,
             unselectedIcon: CupertinoIcons.checkmark_shield,
-            isSelected: _selectedIndex==1
+            isSelected: currentIndex==1
             ),
             label: 'Passwords',
           ),
@@ -68,7 +54,7 @@ class _NavRouteState extends State<NavRoute> {
             icon: CustomIcon(
             selectedIcon: CupertinoIcons.timer_fill,
             unselectedIcon: CupertinoIcons.timer,
-            isSelected: _selectedIndex==2
+            isSelected: currentIndex==2
             ),
             label: 'History',
           ),
@@ -76,20 +62,22 @@ class _NavRouteState extends State<NavRoute> {
             icon: CustomIcon(
             selectedIcon: CupertinoIcons.gear_alt_fill,
             unselectedIcon: CupertinoIcons.gear_alt,
-            isSelected: _selectedIndex==3
+            isSelected: currentIndex==3
             ),
             label: 'Settings',
           ),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: currentIndex,
         selectedItemColor: AppColor.appColor,
-        unselectedItemColor: AppColor.blackColor,
+        unselectedItemColor: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor,
         showUnselectedLabels: true,
         showSelectedLabels: true,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: AppStyles.bottomNavSelectedText(context), 
         unselectedLabelStyle: AppStyles.bottomNavUnselectedText(context), 
-        onTap: _onItemTapped,
+        onTap: (index) {
+          ref.read(bottomNavIndexProvider.notifier).update((state) => index);
+        },
       ),
     );
   }

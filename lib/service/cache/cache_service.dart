@@ -1,10 +1,21 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:intl/intl.dart';
 import 'package:password_vault/cache/cache_manager.dart';
 import 'package:password_vault/cache/hive_models/favourites_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
+import 'package:password_vault/cache/hive_models/system_preferences_model.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CacheService {
+  String getFormattedTimeStampForFileName() {
+    DateTime dateTime = DateTime.now();
+    return DateFormat('yyyy-MM-dd_hh-mm-ss').format(dateTime);
+  }
 
-    Future<List<PasswordModel>> getPasswordsData() async {
+  Future<List<PasswordModel>> getPasswordsData() async {
     List<PasswordModel> passwords = [];
     try {
       var passwordsInfoBox =
@@ -34,7 +45,7 @@ class CacheService {
           await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
       if (passwordsInfoBox.containsKey(passwordId) == false) {
         return false;
-      }  
+      }
       await CacheService().removePasswordFromFavouritesByPasswordId(passwordId);
       await passwordsInfoBox.delete(passwordId);
       return true;
@@ -43,7 +54,7 @@ class CacheService {
     }
   }
 
-  Future <bool> checkPasswordIdExists(String passwordId) async {
+  Future<bool> checkPasswordIdExists(String passwordId) async {
     try {
       var passwordsInfoBox =
           await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
@@ -52,8 +63,8 @@ class CacheService {
       return false;
     }
   }
-  
-    Future <List<PasswordModel>> getFavouritesData() async {
+
+  Future<List<PasswordModel>> getFavouritesData() async {
     List<PasswordModel> favourites = [];
     try {
       var favouritesInfoBox =
@@ -67,7 +78,7 @@ class CacheService {
     return favourites;
   }
 
-  Future <bool> addPasswordsToFavourites(PasswordModel passwordModel) async {
+  Future<bool> addPasswordsToFavourites(PasswordModel passwordModel) async {
     try {
       var favouritesInfoBox =
           await CacheManager<FavoritesModel>().getBoxAsync(CacheTypes.favouritesInfoBox.name);
@@ -78,10 +89,10 @@ class CacheService {
       return true;
     } catch (e) {
       return false;
-    } 
+    }
   }
 
-Future <bool> removePasswordFromFavouritesByPasswordId(String passwordId) async {
+  Future<bool> removePasswordFromFavouritesByPasswordId(String passwordId) async {
     try {
       var favouritesInfoBox =
           await CacheManager<FavoritesModel>().getBoxAsync(CacheTypes.favouritesInfoBox.name);
@@ -96,7 +107,8 @@ Future <bool> removePasswordFromFavouritesByPasswordId(String passwordId) async 
       return false;
     }
   }
- Future <bool> isPasswordInFavoritesByPasswordId(String passwordId) async {
+
+  Future<bool> isPasswordInFavoritesByPasswordId(String passwordId) async {
     try {
       var favouritesInfoBox =
           await CacheManager<FavoritesModel>().getBoxAsync(CacheTypes.favouritesInfoBox.name);
@@ -110,7 +122,7 @@ Future <bool> removePasswordFromFavouritesByPasswordId(String passwordId) async 
     }
   }
 
-Future <bool> clearAllData() async {
+  Future<bool> clearAllData() async {
     try {
       var passwordsInfoBox =
           await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
@@ -123,5 +135,110 @@ Future <bool> clearAllData() async {
       return false;
     }
   }
+
+  Future<void> updateThemeMode(bool val) async {
+    try {
+      var themeModeBox =
+          await CacheManager<SystemPreferencesModel>().getBoxAsync(CacheTypes.systemInfoBox.name);
+      var systemPreferencesModel = themeModeBox.get(0);
+      systemPreferencesModel ??= SystemPreferencesModel(id: 0, isDarkMode: false);
+      systemPreferencesModel.isDarkMode = val;
+      await themeModeBox.put(0, systemPreferencesModel);
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error in updating theme mode: $e');
+    }
+  }
+
+  Future<bool> getThemeMode() async {
+    try {
+      var themeModeBox =
+          await CacheManager<SystemPreferencesModel>().getBoxAsync(CacheTypes.systemInfoBox.name);
+      var systemPreferencesModel = themeModeBox.get(0);
+      return systemPreferencesModel?.isDarkMode ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> exportAllData() async {
+    try {
+      final passwordsInfo = await getPasswordsData();
+      final favouritesInfo = await getFavouritesData();
+
+      // Convert data to JSON format
+      final passwordsJson = passwordsInfo.map((password) => password.toJson()).toList();
+      final favouritesJson = favouritesInfo.map((favorite) => favorite.toJson()).toList();
+
+      final fileContent = {
+        'passwordsInfo': passwordsJson,
+        'favouritesInfo': favouritesJson,
+      };
+      final formattedDateTime = getFormattedTimeStampForFileName();
+      final fileName = 'ExportData_$formattedDateTime';
+
+      // Get the directory for saving images based on the platform
+      Directory dir;
+      if (Platform.isIOS) {
+        dir = await getApplicationDocumentsDirectory();
+      } else {
+        dir = Directory('/storage/emulated/0/Download');
+      }
+      final file = File('${dir.path}/$fileName');
+      var status = await Permission.storage.status;
+      if (!status.isGranted) {
+        await Permission.storage.request();
+      }
+      await file.writeAsString(jsonEncode(fileContent)); // Write JSON content to file
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+Future<bool> importDataFromFile(String filePath) async {
+  try {
+    // Read file content
+    final file = File(filePath);
+    final fileContent = await file.readAsString();
+    
+    // Parse JSON data
+    final jsonData = jsonDecode(fileContent);
+    final List<dynamic> passwordsJson = jsonData['passwordsInfo'];
+    final List<dynamic> favouritesJson = jsonData['favouritesInfo'];
+
+    // Add passwords to cache
+    for (var passwordJson in passwordsJson) {
+      final passwordModel = PasswordModel(
+        passwordId: passwordJson['passwordId'],
+        passwordTitle: passwordJson['passwordTitle'],
+        siteLink: passwordJson['siteLink'],
+        savedPassword: passwordJson['savedPassword'],
+        passwordDescription: passwordJson['passwordDescription'],
+        createdAt: DateTime.parse(passwordJson['createdAt']), // Parse string to DateTime
+        modifiedAt: DateTime.parse(passwordJson['modifiedAt']), // Parse string to DateTime
+      );
+      await addEditPassword(passwordModel);
+    }
+
+    // Add favorites to cache
+    for (var favoriteJson in favouritesJson) {
+      final passwordModel = PasswordModel(
+        passwordId: favoriteJson['passwordId'],
+        passwordTitle: favoriteJson['passwordTitle'],
+        siteLink: favoriteJson['siteLink'],
+        savedPassword: favoriteJson['savedPassword'],
+        passwordDescription: favoriteJson['passwordDescription'],
+        createdAt: DateTime.parse(favoriteJson['createdAt']), // Parse string to DateTime
+        modifiedAt: DateTime.parse(favoriteJson['modifiedAt']), // Parse string to DateTime
+      );
+      await addPasswordsToFavourites(passwordModel);
+    }
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 }

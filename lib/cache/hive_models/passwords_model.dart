@@ -2,8 +2,7 @@ import 'package:hive/hive.dart';
 part 'passwords_model.g.dart';
 
 @HiveType(typeId: 0)
-class PasswordModel{
-
+class PasswordModel {
   @HiveField(0)
   String passwordId;
 
@@ -25,8 +24,8 @@ class PasswordModel{
   @HiveField(6)
   DateTime? modifiedAt;
 
- // @HiveField(7)
- // Icon? passwordIcon;
+  // @HiveField(7)
+  // Icon? passwordIcon;
 
   PasswordModel({
     required this.passwordId,
@@ -38,5 +37,16 @@ class PasswordModel{
     required this.modifiedAt,
     //required this.passwordIcon,
   });
-  
+
+  Map<String, dynamic> toJson() {
+    return {
+      'passwordId': passwordId,
+      'passwordTitle': passwordTitle,
+      'siteLink': siteLink,
+      'savedPassword': savedPassword,
+      'passwordDescription': passwordDescription,
+      'createdAt': createdAt?.toIso8601String(), // Convert DateTime to string
+      'modifiedAt': modifiedAt?.toIso8601String(), // Convert DateTime to string
+    };
+  }
 }

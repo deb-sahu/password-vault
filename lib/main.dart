@@ -1,4 +1,5 @@
 import 'dart:io';
+//import 'package:device_preview/device_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_vault/cache/cache_manager.dart';
@@ -6,7 +7,6 @@ import 'package:password_vault/cache/hive_models/favourites_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/cache/hive_models/system_preferences_model.dart';
 import 'package:password_vault/service/singletons/camera_description_helper.dart';
-//import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,15 +63,21 @@ void main() async {
   ]);
 
   // Uncomment the line below to enable device preview
-  //runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const PasswordVault()));
+/*   runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => const ProviderScope(
+        child: PasswordVault(),
+      ),
+    ),
+  ); */
 
   // Uncomment the line below to disable device preview
-
-  runApp(
+   runApp(
     const ProviderScope(
       child: PasswordVault(),
     ),
-  );
+  ); 
 }
 
 Future<void> requestPermissions(List<Permission> permissions) async {

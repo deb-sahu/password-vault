@@ -2,20 +2,24 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:password_vault/feature/widget_utils/custom_top_snackbar.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:password_vault/service/singletons/theme_change_manager.dart';
 
 class AppStyles {
   // Responsive Text Styles
-  
   static TextStyle headline1(BuildContext context, bool isPortrait) {
     return GoogleFonts.arsenal(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.06 : MediaQuery.of(context).size.height * 0.08,
+      fontSize: isPortrait
+          ? MediaQuery.of(context).size.width * 0.06
+          : MediaQuery.of(context).size.height * 0.08,
       fontWeight: FontWeight.w600,
     );
   }
 
   static TextStyle headline2(BuildContext context, bool isPortrait) {
     return GoogleFonts.coveredByYourGrace(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.09 : MediaQuery.of(context).size.height * 0.1,
+      fontSize: isPortrait
+          ? MediaQuery.of(context).size.width * 0.09
+          : MediaQuery.of(context).size.height * 0.1,
       fontWeight: FontWeight.w500,
       color: AppColor.grey_700,
     );
@@ -23,7 +27,9 @@ class AppStyles {
 
   static TextStyle greyText(BuildContext context, bool isPortrait) {
     return GoogleFonts.cabinCondensed(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.04 : MediaQuery.of(context).size.height * 0.06,
+      fontSize: isPortrait
+          ? MediaQuery.of(context).size.width * 0.04
+          : MediaQuery.of(context).size.height * 0.06,
       fontWeight: FontWeight.w400,
       color: AppColor.ultraDarkGrey,
     );
@@ -31,7 +37,9 @@ class AppStyles {
 
   static TextStyle primaryBoldText(BuildContext context, bool isPortrait) {
     return GoogleFonts.scada(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.05 : MediaQuery.of(context).size.height * 0.07,
+      fontSize: isPortrait
+          ? MediaQuery.of(context).size.width * 0.05
+          : MediaQuery.of(context).size.height * 0.07,
       fontWeight: FontWeight.w700,
       color: AppColor.primaryColor,
     );
@@ -39,7 +47,9 @@ class AppStyles {
 
   static TextStyle appHeaderTextStyle(BuildContext context, bool isPortrait) {
     return GoogleFonts.scada(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.05 : MediaQuery.of(context).size.height * 0.07,
+      fontSize: isPortrait
+          ? MediaQuery.of(context).size.width * 0.05
+          : MediaQuery.of(context).size.height * 0.07,
       fontWeight: FontWeight.w800,
       color: AppColor.appColor,
     );
@@ -47,10 +57,13 @@ class AppStyles {
 
   static TextStyle loginText(BuildContext context, bool isPortrait) {
     return TextStyle(
-      fontSize: isPortrait ? MediaQuery.of(context).size.width * 0.04 : MediaQuery.of(context).size.height * 0.06,
+      fontSize: isPortrait
+          ? MediaQuery.of(context).size.width * 0.04
+          : MediaQuery.of(context).size.height * 0.06,
     );
   }
-    static TextStyle normalText(BuildContext context) {
+
+  static TextStyle normalText(BuildContext context) {
     return TextStyle(
       fontSize: MediaQuery.of(context).size.width * 0.035,
     );
@@ -99,7 +112,7 @@ class AppStyles {
     return MediaQuery.of(context).size.width * 0.05;
   }
 
-    static double fabSize(BuildContext context) {
+  static double fabSize(BuildContext context) {
     return MediaQuery.of(context).size.height * 0.07;
   }
 
@@ -138,55 +151,47 @@ class AppStyles {
 
   // Color Button Styles
   static ButtonStyle buttonDisabled = ButtonStyle(
-    foregroundColor: MaterialStateProperty.all(AppColor.grey_600),
-    backgroundColor: MaterialStateProperty.all(AppColor.whiteColor),
+    foregroundColor: ThemeChangeService().getThemeChangeValue()
+        ? MaterialStateProperty.all(AppColor.whiteColor)
+        : MaterialStateProperty.all(AppColor.grey_600),
+    backgroundColor: ThemeChangeService().getThemeChangeValue()
+        ? MaterialStateProperty.all(AppColor.grey_800)
+        : MaterialStateProperty.all(AppColor.whiteColor),
     side: MaterialStateProperty.all(BorderSide(
       color: AppColor.grey_600,
     )),
   );
 
-  static ButtonStyle buttonPrimary = ButtonStyle(
-    foregroundColor: MaterialStateProperty.all(AppColor.whiteColor),
-    backgroundColor: MaterialStateProperty.all(AppColor.blue_900),
-  );
-
-  static ButtonStyle buttonSecondary = ButtonStyle(
-    foregroundColor: MaterialStateProperty.all(AppColor.blue_900),
-    backgroundColor: MaterialStateProperty.all(AppColor.whiteColor),
-    side: MaterialStateProperty.all(BorderSide(
-      color: AppColor.blue_900,
-    )),
-  );
-
-  static ButtonStyle buttonFinal = ButtonStyle(
-    foregroundColor: MaterialStateProperty.all(AppColor.whiteColor),
-    backgroundColor: MaterialStateProperty.all(
-      AppColor.red_400,
-    ),
-  );
-
-  static ButtonStyle onlyTextButton = ButtonStyle(
-    foregroundColor: MaterialStateProperty.all(AppColor.blue_900),
+  static ButtonStyle onlyTextButtonLight = ButtonStyle(
+    foregroundColor: MaterialStateProperty.all(AppColor.grey_600),
     backgroundColor: MaterialStateProperty.all(AppColor.grey_200),
     side: MaterialStateProperty.all(BorderSide(
       color: AppColor.lightGrey,
     )),
   );
 
+  static ButtonStyle onlyTextButtonDark = ButtonStyle(
+    foregroundColor: MaterialStateProperty.all(AppColor.whiteColor),
+    backgroundColor: MaterialStateProperty.all(AppColor.grey_800),
+    side: MaterialStateProperty.all(BorderSide(
+      color: AppColor.blackColor,
+    )),
+  );
+
   // Elevated Button Styles
   static ButtonStyle buttonPrimaryElevated = ElevatedButton.styleFrom(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0), 
+        borderRadius: BorderRadius.circular(10.0),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 16.0), 
-      minimumSize: const Size(double.infinity, 48.0), 
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      minimumSize: const Size(double.infinity, 48.0),
       textStyle: const TextStyle(fontSize: 16.0),
       backgroundColor: AppColor.appColor,
       foregroundColor: AppColor.whiteColor);
 
   // Top Snackbars Styles
   static void showInfo(BuildContext context, String message,
-      {Duration duration = const Duration(seconds: 3)}) {
+      {Duration duration = const Duration(seconds: 2)}) {
     CustomTopSnackbar.show(
       context,
       message,
@@ -196,24 +201,26 @@ class AppStyles {
   }
 
   static void showSuccess(BuildContext context, String message,
-      {Duration duration = const Duration(seconds: 3)}) {
+      {Duration duration = const Duration(seconds: 2)}) {
     CustomTopSnackbar.show(
       context,
       message,
       backgroundColor: AppColor.primaryColor,
       textColor: AppColor.whiteColor,
+      borderColor: AppColor.appColor,
       leadingIcon: CupertinoIcons.checkmark_alt_circle_fill,
       duration: duration,
     );
   }
 
   static void showError(BuildContext context, String message,
-      {Duration duration = const Duration(seconds: 3)}) {
+      {Duration duration = const Duration(seconds: 2)}) {
     CustomTopSnackbar.show(
       context,
       message,
       backgroundColor: AppColor.primaryColor,
       textColor: AppColor.whiteColor,
+      borderColor: AppColor.appColor,
       leadingIcon: CupertinoIcons.exclamationmark_triangle_fill,
       duration: duration,
     );

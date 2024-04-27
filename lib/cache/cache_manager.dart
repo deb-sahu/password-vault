@@ -12,10 +12,10 @@ class CacheManager<T> {
   Future<int> deleteRecords(Box<T> box) async {
     return await box.clear();
   }
-
 }
 
-  enum CacheTypes {
-   passwordsInfoBox,
-   favouritesInfoBox,
+enum CacheTypes {
+  passwordsInfoBox,
+  favouritesInfoBox,
+  systemInfoBox,
 }

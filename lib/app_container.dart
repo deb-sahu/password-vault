@@ -1,29 +1,31 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/route/route_service.dart';
+import 'package:password_vault/service/singletons/theme_change_manager.dart';
 import 'package:password_vault/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-class PasswordVault extends StatefulWidget {
-  const PasswordVault({Key? key}) : super(key: key);
-  @override
-  State<PasswordVault> createState() => _PasswordVaultState();
-}
+final themeChangeProvider = StateProvider<bool?>((ref) => null);
 
-class _PasswordVaultState extends State<PasswordVault> {
-  Locale? _locale;
-  @override
-  void initState() {
-    super.initState();
-  }
+final themeCacheProvider = FutureProvider<bool>((ref) async {
+  return await CacheService().getThemeMode();
+});
+
+
+class PasswordVault extends ConsumerWidget {
+  const PasswordVault({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    var themeChange = ref.watch(themeChangeProvider);
+    ThemeChangeService().initializeThemeChange(ref, themeChange);
+
     return MaterialApp.router(
       title: 'Audit Safe',
       debugShowCheckedModeBanner: false,
-      //checkerboardOffscreenLayers: true,
-      locale: _locale,
+      locale: const Locale('en', ''),
       supportedLocales: const [
         Locale('en', ''),
         Locale('fr', ''),
@@ -31,10 +33,9 @@ class _PasswordVaultState extends State<PasswordVault> {
       ],
       localizationsDelegates: _getLocalizationsDelegates(),
       localeResolutionCallback: (locale, supportedLocales) => _getLocale(locale, supportedLocales),
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.lightTheme,
+      theme: ThemeChangeService().getThemeChangeValue() ? AppTheme.darkTheme : AppTheme.lightTheme,
       builder: EasyLoading.init(),
-      routerConfig: router,
+      routerConfig: createRouter(context, ref),
     );
   }
 

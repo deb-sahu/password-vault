@@ -1,24 +1,27 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:password_vault/constants/common_exports.dart';
+import 'package:password_vault/service/singletons/theme_change_manager.dart';
 
-class DeleteConfirmationDialog extends StatelessWidget {
+class DeleteConfirmationDialog extends ConsumerWidget {
   final String passwordId;
   final VoidCallback onDelete;
 
   const DeleteConfirmationDialog({
     required this.passwordId,
     required this.onDelete,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     var isPortrait = AppStyles.isPortraitMode(context);
+
     return AlertDialog(
-      backgroundColor: AppColor.grey_200,
-      surfaceTintColor: AppColor.grey_100,
+      backgroundColor: ThemeChangeService().getThemeChangeValue() ? AppColor.grey_800 : AppColor.grey_200,
+      surfaceTintColor: ThemeChangeService().getThemeChangeValue() ? AppColor.grey_400 : AppColor.grey_100,
       title: Text('Delete Password', style: AppStyles.primaryBoldText(context, isPortrait)),
       content: Text('Are you sure you want to delete this password?',
-          style: AppStyles.customText(context)),
+          style: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor)),
       actions: <Widget>[
         TextButton(
           onPressed: () {

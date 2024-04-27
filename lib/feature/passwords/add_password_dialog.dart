@@ -1,21 +1,22 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
+import 'package:password_vault/service/singletons/theme_change_manager.dart';
 import 'package:uuid/uuid.dart';
 
-class AddPasswordDialog extends StatefulWidget {
+class AddPasswordDialog extends ConsumerStatefulWidget {
   final PasswordModel? passwordModel;
   final Function onSuccess; // Callback function
 
-  const AddPasswordDialog({Key? key, this.passwordModel, required this.onSuccess})
-      : super(key: key);
+  const AddPasswordDialog({super.key, this.passwordModel, required this.onSuccess});
 
   @override
   // ignore: library_private_types_in_public_api
   _AddPasswordDialogState createState() => _AddPasswordDialogState();
 }
 
-class _AddPasswordDialogState extends State<AddPasswordDialog> {
+class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
   late TextEditingController _titleController;
   late TextEditingController _linkController;
   late TextEditingController _passwordController;
@@ -100,9 +101,10 @@ class _AddPasswordDialogState extends State<AddPasswordDialog> {
   Widget build(BuildContext context) {
     var height = AppStyles.viewHeight(context);
     var isPortrait = AppStyles.isPortraitMode(context);
+
     return AlertDialog(
-      backgroundColor: AppColor.grey_200,
-      surfaceTintColor: AppColor.grey_100,
+      backgroundColor: ThemeChangeService().getThemeChangeValue() ? AppColor.grey_800 : AppColor.grey_200,
+      surfaceTintColor: ThemeChangeService().getThemeChangeValue() ? AppColor.grey_400 : AppColor.grey_100,
       iconColor: AppColor.primaryColor,
       icon: const Icon(Icons.lock),
       title: _isEditMode
@@ -116,14 +118,14 @@ class _AddPasswordDialogState extends State<AddPasswordDialog> {
             TextField(
               controller: _titleController,
               decoration:
-                  InputDecoration(labelText: 'Title', labelStyle: AppStyles.customText(context)),
+                  InputDecoration(labelText: 'Title', labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor)),
             ),
             SizedBox(height: height * 0.01),
             TextField(
               controller: _linkController,
               decoration: InputDecoration(
                   labelText: 'Website',
-                  labelStyle: AppStyles.customText(context),
+                  labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor),
                   hintText: AutofillHints.url),
             ),
             SizedBox(height: height * 0.01),
@@ -131,7 +133,7 @@ class _AddPasswordDialogState extends State<AddPasswordDialog> {
               controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Password',
-                labelStyle: AppStyles.customText(context),
+                labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor),
                 suffixIcon: IconButton(
                   onPressed: _togglePasswordVisibility,
                   icon:
@@ -144,7 +146,7 @@ class _AddPasswordDialogState extends State<AddPasswordDialog> {
             TextField(
               controller: _descriptionController,
               decoration: InputDecoration(
-                  labelText: 'Description', labelStyle: AppStyles.customText(context)),
+                  labelText: 'Description', labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor)),
             ),
           ],
         ),

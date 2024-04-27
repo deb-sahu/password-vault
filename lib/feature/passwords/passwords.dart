@@ -1,23 +1,32 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:password_vault/cache/cache_manager.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:password_vault/app_container.dart';
 import 'package:password_vault/feature/passwords/add_password_dialog.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/feature/passwords/delete_confirmation_dialog.dart';
+import 'package:password_vault/feature/settings/clear_data_dialog.dart';
+import 'package:password_vault/feature/settings/settings.dart';
 import 'package:password_vault/feature/widget_utils/custom_empty_state_illustartion.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
+import 'package:password_vault/service/singletons/theme_change_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/common_exports.dart';
+import 'package:top_snackbar/top_snackbar.dart';
 
-class Passwords extends StatefulWidget {
-  const Passwords({Key? key}) : super(key: key);
+final deletePasswordNotifierProvider = StateProvider<bool>((ref) {
+  return false;
+});
+
+class Passwords extends ConsumerStatefulWidget {
+  const Passwords({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
   _PasswordsState createState() => _PasswordsState();
 }
 
-class _PasswordsState extends State<Passwords> {
+class _PasswordsState extends ConsumerState<Passwords> {
   late TextEditingController _passwordController;
   late TextEditingController _titleController;
   late TextEditingController _linkController;
@@ -46,11 +55,11 @@ class _PasswordsState extends State<Passwords> {
 
   Future<void> _loadPasswords() async {
     try {
-      var passwordsInfoBox =
-          await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
-      _passwords = passwordsInfoBox.values.toList();
+      _passwords = await CacheService().getPasswordsData();
+      ref.read(clearAllDataNotifierProvider.notifier).update((state) => false);
+      ref.read(importChangeProvider.notifier).update((state) => false);
     } catch (e) {
-      // Handle error
+      _passwords = [];
     }
     if (mounted) {
       setState(() {});
@@ -62,6 +71,7 @@ class _PasswordsState extends State<Passwords> {
       if (success) {
         setState(() {
           _passwords.removeWhere((password) => password.passwordId == passwordId);
+          ref.read(deletePasswordNotifierProvider.notifier).update((state) => true);
         });
         AppStyles.showSuccess(context, 'Password deleted successfully');
       } else {
@@ -104,7 +114,7 @@ class _PasswordsState extends State<Passwords> {
 
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: _passwordController.text));
-    AppStyles.showSuccess(context, 'Password copied to clipboard');
+    CustomTopSnackbar.showInfo(context, 'Info Message');
   }
 
   void _openWebPage(String url) async {
@@ -124,6 +134,11 @@ class _PasswordsState extends State<Passwords> {
     var height = AppStyles.viewHeight(context);
     var width = AppStyles.viewWidth(context);
     bool isPortrait = AppStyles.isPortraitMode(context);
+    if (ref.watch(clearAllDataNotifierProvider) || ref.watch(importChangeProvider)) {
+      _loadPasswords();
+    }
+    var themeChange = ref.watch(themeChangeProvider);
+    ThemeChangeService().initializeThemeChange(ref, themeChange);
 
     return Scaffold(
       appBar: AppBar(
@@ -164,6 +179,7 @@ class _PasswordsState extends State<Passwords> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: height * 0.015),
             Expanded(
               child: _passwords.isEmpty
                   ? const EmptyStateIllustration(
@@ -188,7 +204,9 @@ class _PasswordsState extends State<Passwords> {
                               style: AppStyles.customText(
                                 context,
                                 sizeFactor: 0.04,
-                                color: AppColor.grey_800,
+                                color: ThemeChangeService().getThemeChangeValue()
+                                    ? AppColor.whiteColor
+                                    : AppColor.grey_800,
                                 weight: FontWeight.w600,
                               ),
                             ),
@@ -206,14 +224,20 @@ class _PasswordsState extends State<Passwords> {
                                           context,
                                           sizeFactor: 0.038,
                                           weight: FontWeight.w600,
-                                          color: AppColor
-                                              .themeBlueMid, // Color to indicate it's a link
+                                          color: ThemeChangeService().getThemeChangeValue()
+                                              ? AppColor.primaryColor
+                                              : AppColor
+                                                  .themeBlueMid, // Color to indicate it's a link
                                         ),
                                       ),
                                     ),
                                     SizedBox(height: height * 0.02),
                                     TextField(
-                                      style: AppStyles.customText(context, sizeFactor: 0.03),
+                                      style: AppStyles.customText(context,
+                                          sizeFactor: 0.03,
+                                          color: ThemeChangeService().getThemeChangeValue()
+                                              ? AppColor.whiteColor
+                                              : AppColor.blackColor),
                                       controller:
                                           TextEditingController(text: password.savedPassword),
                                       decoration: InputDecoration(
@@ -243,7 +267,11 @@ class _PasswordsState extends State<Passwords> {
                                     TextField(
                                       controller:
                                           TextEditingController(text: password.passwordDescription),
-                                      style: AppStyles.customText(context, sizeFactor: 0.03),
+                                      style: AppStyles.customText(context,
+                                          sizeFactor: 0.03,
+                                          color: ThemeChangeService().getThemeChangeValue()
+                                              ? AppColor.whiteColor
+                                              : AppColor.blackColor),
                                       decoration: const InputDecoration(
                                         labelText: 'Description',
                                         border: OutlineInputBorder(),

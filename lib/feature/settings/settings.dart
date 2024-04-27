@@ -131,7 +131,7 @@ class Settings extends ConsumerWidget {
                 ),
               ],
             ),
-            SizedBox(height: height * 0.5),
+            SizedBox(height: height * 0.45),
             SizedBox(
               width: double.infinity,
               height: height * 0.06,

@@ -33,6 +33,13 @@ class CacheService {
       var passwordsInfoBox =
           await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
       await passwordsInfoBox.put(passwordsInfo.passwordId, passwordsInfo);
+
+      // Add or update password in favourites
+      var isPasswordInFavourites = await isPasswordInFavoritesByPasswordId(passwordsInfo.passwordId);
+      if (isPasswordInFavourites) {
+        await removePasswordFromFavouritesByPasswordId(passwordsInfo.passwordId);
+        await addPasswordsToFavourites(passwordsInfo);
+      }
       return true;
     } catch (e) {
       return false;

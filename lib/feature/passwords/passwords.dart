@@ -12,7 +12,6 @@ import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/singletons/theme_change_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/common_exports.dart';
-import 'package:top_snackbar/top_snackbar.dart';
 
 final deletePasswordNotifierProvider = StateProvider<bool>((ref) {
   return false;
@@ -93,12 +92,17 @@ class _PasswordsState extends ConsumerState<Passwords> {
   }
 
   void _editPassword(PasswordModel password) {
-    showDialog(
+    showModalBottomSheet(
+      isDismissible: false,
       context: context,
-      builder: (context) => AddPasswordDialog(
-        passwordModel: password,
-        onSuccess: _reloadPasswords,
-      ),
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return AddPasswordDialog(
+          passwordModel: password,
+          onSuccess: _reloadPasswords,
+        );
+      },
     );
   }
 
@@ -112,9 +116,13 @@ class _PasswordsState extends ConsumerState<Passwords> {
     });
   }
 
-  void _copyToClipboard() {
-    Clipboard.setData(ClipboardData(text: _passwordController.text));
-    CustomTopSnackbar.showInfo(context, 'Info Message');
+  bool _copyToClipboard(String password) {
+    try {
+      Clipboard.setData(ClipboardData(text: password));
+      return true;
+    } catch (e) {
+      return false;
+    }   
   }
 
   void _openWebPage(String url) async {
@@ -154,11 +162,16 @@ class _PasswordsState extends ConsumerState<Passwords> {
         width: AppStyles.fabSize(context),
         child: FloatingActionButton(
           onPressed: () {
-            showDialog(
+            showModalBottomSheet(
+              isDismissible: false,
               context: context,
-              builder: (context) => AddPasswordDialog(
-                onSuccess: _reloadPasswords,
-              ),
+              useSafeArea: true,
+              isScrollControlled: true,
+              builder: (BuildContext context) {
+                return AddPasswordDialog(
+                  onSuccess: _reloadPasswords,
+                );
+              },
             );
           },
           backgroundColor: AppColor.appColor,
@@ -248,7 +261,15 @@ class _PasswordsState extends ConsumerState<Passwords> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             IconButton(
-                                              onPressed: _copyToClipboard,
+                                              onPressed: (){
+                                               bool res = _copyToClipboard(password.savedPassword);
+                                                if(res){
+                                                  AppStyles.showSuccess(context, 'Password copied to clipboard');
+                                                }
+                                                else{
+                                                  AppStyles.showError(context, 'Error copying password to clipboard');
+                                                }
+                                                },
                                               icon: const Icon(Icons.copy),
                                             ),
                                             IconButton(

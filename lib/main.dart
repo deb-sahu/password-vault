@@ -1,5 +1,4 @@
 import 'dart:io';
-//import 'package:device_preview/device_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_vault/cache/cache_manager.dart';
@@ -15,6 +14,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:camera/camera.dart';
 import 'app_container.dart';
+//import 'package:device_preview/device_preview.dart';
 
 List<CameraDescription> cameras = [];
 
@@ -39,10 +39,19 @@ void main() async {
   // To disable runtime fetching of Google Fonts
   GoogleFonts.config.allowRuntimeFetching = false;
 
-  // To add a custom license
+  // To add custom license
   LicenseRegistry.addLicense(() async* {
-    final license = await rootBundle.loadString('google_fonts/OFL.txt');
-    yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+    final license1 = await rootBundle.loadString('google_fonts/OFL1.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license1);
+
+    final license2 = await rootBundle.loadString('google_fonts/OFL2.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license2);
+
+    final license3 = await rootBundle.loadString('google_fonts/OFL3.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license3);
+
+    final license4 = await rootBundle.loadString('google_fonts/OFL4.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license4);
   });
 
   var directory = await getApplicationDocumentsDirectory();
@@ -73,11 +82,11 @@ void main() async {
   ); */
 
   // Uncomment the line below to disable device preview
-   runApp(
+  runApp(
     const ProviderScope(
       child: PasswordVault(),
     ),
-  ); 
+  );
 }
 
 Future<void> requestPermissions(List<Permission> permissions) async {

@@ -1,9 +1,15 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:password_vault/app_container.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/singletons/theme_change_manager.dart';
 import 'package:uuid/uuid.dart';
+
+final updatePasswordProvider = StateProvider<bool>((ref) {
+  return false;
+});
 
 class AddPasswordDialog extends ConsumerStatefulWidget {
   final PasswordModel? passwordModel;
@@ -90,6 +96,7 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
             ? AppStyles.showSuccess(context, 'Password updated successfully.')
             : AppStyles.showSuccess(context, 'Password added successfully.');
         widget.onSuccess(); // Callback function
+        ref.read(updatePasswordProvider.notifier).update((state) => true);
         Navigator.pop(context);
       } else {
         AppStyles.showError(context, 'Failed to add password. Please try again.');
@@ -100,40 +107,97 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     var height = AppStyles.viewHeight(context);
-    var isPortrait = AppStyles.isPortraitMode(context);
+    var width = AppStyles.viewWidth(context);
+    var themeChange = ref.watch(themeChangeProvider);
+    ThemeChangeService().initializeThemeChange(ref, themeChange);
 
-    return AlertDialog(
-      backgroundColor: ThemeChangeService().getThemeChangeValue() ? AppColor.grey_800 : AppColor.grey_200,
-      surfaceTintColor: ThemeChangeService().getThemeChangeValue() ? AppColor.grey_400 : AppColor.grey_100,
-      iconColor: AppColor.primaryColor,
-      icon: const Icon(Icons.lock),
-      title: _isEditMode
-          ? Text('Edit Password', style: AppStyles.primaryBoldText(context, isPortrait))
-          : Text('Add New Password', style: AppStyles.primaryBoldText(context, isPortrait)),
-      content: SingleChildScrollView(
+    return SizedBox(
+      height: height * 0.78,
+      child: Padding(
+        padding: EdgeInsets.all(width * 0.06),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: _titleController,
-              decoration:
-                  InputDecoration(labelText: 'Title', labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  style: ThemeChangeService().getThemeChangeValue()
+                      ? AppStyles.onlyTextButtonDark
+                      : AppStyles.onlyTextButtonLight,
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: AppStyles.customText(context,
+                        color: AppColor.primaryColor, sizeFactor: 0.04),
+                  ),
+                ),
+                TextButton(
+                  style: ThemeChangeService().getThemeChangeValue()
+                      ? AppStyles.onlyTextButtonDark
+                      : AppStyles.onlyTextButtonLight,
+                  onPressed: () async => _savePassword(context),
+                  child: _isEditMode
+                      ? Text(
+                          'Update',
+                          style: AppStyles.customText(context,
+                              color: AppColor.primaryColor, sizeFactor: 0.04),
+                        )
+                      : Text(
+                          'Save',
+                          style: AppStyles.customText(context,
+                              color: AppColor.primaryColor, sizeFactor: 0.04),
+                        ),
+                ),
+              ],
             ),
-            SizedBox(height: height * 0.01),
+            SizedBox(height: height * 0.03),
             TextField(
+              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor),
+              controller: _titleController,
+              spellCheckConfiguration:
+                  SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
+              decoration: InputDecoration(
+                  labelText: 'Title',
+                  labelStyle: AppStyles.customText(context,
+                      sizeFactor: 0.035,
+                      color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor)),
+            ),
+            SizedBox(height: height * 0.02),
+            TextField(
+              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor),
+              spellCheckConfiguration:
+                  SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
               controller: _linkController,
               decoration: InputDecoration(
                   labelText: 'Website',
-                  labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor),
+                  labelStyle: AppStyles.customText(context,
+                      sizeFactor: 0.035,
+                      color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor),
                   hintText: AutofillHints.url),
             ),
-            SizedBox(height: height * 0.01),
+            SizedBox(height: height * 0.02),
             TextField(
+              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor),
               controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Password',
-                labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor),
+                labelStyle: AppStyles.customText(context,
+                    sizeFactor: 0.035,
+                    color: ThemeChangeService().getThemeChangeValue()
+                        ? AppColor.whiteColor
+                        : AppColor.blackColor),
                 suffixIcon: IconButton(
                   onPressed: _togglePasswordVisibility,
                   icon:
@@ -142,36 +206,44 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
               ),
               obscureText: _isObscured,
             ),
-            SizedBox(height: height * 0.01),
+            SizedBox(height: height * 0.02),
             TextField(
+              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor),
+              spellCheckConfiguration:
+                  SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
               controller: _descriptionController,
               decoration: InputDecoration(
-                  labelText: 'Description', labelStyle: AppStyles.customText(context, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor)),
+                  labelText: 'Description',
+                  labelStyle: AppStyles.customText(context,
+                      sizeFactor: 0.035,
+                      color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor)),
+            ),
+            SizedBox(height: height * 0.045),
+            Center(
+              child: Text(
+                'Note: Passwords are stored securely in your device.',
+                style: AppStyles.customText(
+                  context,
+                  sizeFactor: 0.03,
+                  color: AppColor.primaryColor,
+                ),
+              ),
+            ),
+            SizedBox(height: height * 0.035),
+            Center(
+              child: Icon(
+                size: width * 0.09,
+                Icons.lock,
+                color: AppColor.primaryColor,
+              ),
             ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Cancel',
-            style: AppStyles.customText(context, color: AppColor.whiteColor),
-          ),
-        ),
-        TextButton(
-          onPressed: () async => _savePassword(context),
-          child: _isEditMode
-              ? Text(
-                  'Update',
-                  style: AppStyles.customText(context, color: AppColor.whiteColor),
-                )
-              : Text(
-                  'Save',
-                  style: AppStyles.customText(context, color: AppColor.whiteColor),
-                ),
-        ),
-      ],
     );
   }
 }

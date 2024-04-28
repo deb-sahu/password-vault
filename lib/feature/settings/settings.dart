@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +43,7 @@ class Settings extends ConsumerWidget {
               tileColor: ThemeChangeService().getThemeChangeValue()
                   ? AppColor.grey_800
                   : AppColor.grey_200,
-              title: const Text('Dark Mode'),
+              title: Text('Dark Mode', style: AppStyles.customText(context, sizeFactor: 0.038, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor),),
               trailing: Switch(
                 value: ThemeChangeService().getThemeChangeValue(),
                 onChanged: (value) async {
@@ -64,6 +65,22 @@ class Settings extends ConsumerWidget {
                     if (context.mounted) {
                       if (bool) {
                         AppStyles.showSuccess(context, 'Data exported successfully');
+                        if (Platform.isAndroid){
+                           ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Check your downloads folder for the exported data file'),
+                            duration: Duration(seconds: 4),
+                          ),
+                        );
+                        }
+                        else if (Platform.isIOS){
+                          ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Check your application directory for the exported data file'),
+                            duration: Duration(seconds: 4),
+                          ),
+                        );
+                        }
                       } else {
                         AppStyles.showError(context, 'Error in exporting data');
                       }
@@ -78,7 +95,7 @@ class Settings extends ConsumerWidget {
                           color: ThemeChangeService().getThemeChangeValue()
                               ? AppColor.whiteColor
                               : AppColor.blackColor,
-                          sizeFactor: 0.04,
+                          sizeFactor: 0.038,
                         ),
                       ),
                       SizedBox(width: width * 0.6),
@@ -121,7 +138,7 @@ class Settings extends ConsumerWidget {
                           color: ThemeChangeService().getThemeChangeValue()
                               ? AppColor.whiteColor
                               : AppColor.blackColor,
-                          sizeFactor: 0.04,
+                          sizeFactor: 0.038,
                         ),
                       ),
                       SizedBox(width: width * 0.6),
@@ -131,7 +148,7 @@ class Settings extends ConsumerWidget {
                 ),
               ],
             ),
-            SizedBox(height: height * 0.45),
+            SizedBox(height: height * 0.03),
             SizedBox(
               width: double.infinity,
               height: height * 0.06,

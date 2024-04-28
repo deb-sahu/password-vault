@@ -117,6 +117,13 @@ class AppTheme {
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       foregroundColor: AppColor.whiteColor,
     ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: AppColor.grey_200,
+      surfaceTintColor: AppColor.grey_100,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
   );
 
   // Device DARK theme mode
@@ -255,6 +262,13 @@ class AppTheme {
       activeTickMarkColor: Colors.black,
       activeTrackColor: Colors.black,
       inactiveTickMarkColor: Colors.grey,
+    ),
+      bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: AppColor.grey_800,
+      surfaceTintColor: AppColor.grey_400,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
     ),
   );
 }

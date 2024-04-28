@@ -174,7 +174,7 @@ class AppStyles {
     foregroundColor: MaterialStateProperty.all(AppColor.whiteColor),
     backgroundColor: MaterialStateProperty.all(AppColor.grey_800),
     side: MaterialStateProperty.all(BorderSide(
-      color: AppColor.blackColor,
+      color: AppColor.grey_800,
     )),
   );
 

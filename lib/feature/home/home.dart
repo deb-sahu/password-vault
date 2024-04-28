@@ -5,6 +5,7 @@ import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:password_vault/feature/home/favourites_dialog.dart';
+import 'package:password_vault/feature/passwords/add_password_dialog.dart';
 import 'package:password_vault/feature/passwords/passwords.dart';
 import 'package:password_vault/feature/settings/clear_data_dialog.dart';
 import 'package:password_vault/feature/settings/settings.dart';
@@ -41,6 +42,7 @@ class _HomeState extends ConsumerState<Home> {
       ref.read(changeFavoritesdNotifierProvider.notifier).update((state) => false);
       ref.read(clearAllDataNotifierProvider.notifier).update((state) => false);
       ref.read(importChangeProvider.notifier).update((state) => false);
+      ref.read(updatePasswordProvider.notifier).update((state) => false);
     } catch (e) {
       favoritePasswords = [];
     }
@@ -58,7 +60,7 @@ class _HomeState extends ConsumerState<Home> {
     if (ref.watch(deletePasswordNotifierProvider) ||
         ref.watch(changeFavoritesdNotifierProvider) ||
         ref.watch(clearAllDataNotifierProvider) ||
-        ref.watch(importChangeProvider)) {
+        ref.watch(importChangeProvider) || ref.watch(updatePasswordProvider)) {
       _loadFavourites();
     }
     ThemeChangeService().initializeThemeChange(ref, themeChange);

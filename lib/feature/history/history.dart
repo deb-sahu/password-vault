@@ -144,7 +144,7 @@ class History extends ConsumerWidget {
                           '${_capitalizeFirstLetter(history.action)} - ${history.passwordTitle}',
                           style: AppStyles.customText(
                             context,
-                            sizeFactor: 0.035,
+                            sizeFactor: 0.0345,
                             weight: FontWeight.w600,
                             color: ThemeChangeService().getThemeChangeValue()
                                 ? AppColor.grey_500

@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:password_vault/cache/cache_manager.dart';
 import 'package:password_vault/cache/hive_models/favourites_model.dart';
+import 'package:password_vault/cache/hive_models/history_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/cache/hive_models/system_preferences_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:uuid/uuid.dart';
 
 class CacheService {
   String getFormattedTimeStampForFileName() {
@@ -53,6 +55,12 @@ class CacheService {
       if (passwordsInfoBox.containsKey(passwordId) == false) {
         return false;
       }
+      // Log password history before deleting
+      var password = passwordsInfoBox.get(passwordId);
+      if (password != null) {
+      await logPasswordHistory(password, 'deleted');
+      }
+
       await CacheService().removePasswordFromFavouritesByPasswordId(passwordId);
       await passwordsInfoBox.delete(passwordId);
       return true;
@@ -241,11 +249,42 @@ Future<bool> importDataFromFile(String filePath) async {
       );
       await addPasswordsToFavourites(passwordModel);
     }
-
     return true;
   } catch (e) {
     return false;
   }
 }
 
+ Future<void> logPasswordHistory(PasswordModel password, String action) async {
+    try {
+      var historyBox = await CacheManager<HistoryModel>().getBoxAsync(CacheTypes.historyInfoBox.name);
+      var historyEntry = HistoryModel(
+        historyId: const Uuid().v4(),
+        passwordId: password.passwordId,
+        action: action,
+        timestamp: DateTime.now(),
+        passwordTitle: password.passwordTitle,
+        siteLink: password.siteLink,
+        savedPassword: password.savedPassword,
+        passwordDescription: password.passwordDescription,
+      );
+      await historyBox.put(historyEntry.historyId, historyEntry);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error logging password history: $e');
+      }
+    }
+  }
+
+  Future<List<HistoryModel>> getPasswordHistory() async {
+    try {
+      var historyBox = await CacheManager<HistoryModel>().getBoxAsync(CacheTypes.historyInfoBox.name);
+      return historyBox.values.toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching password history: $e');
+      }
+      return [];
+    }
+  }
 }

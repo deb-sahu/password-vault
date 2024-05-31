@@ -287,4 +287,14 @@ Future<bool> importDataFromFile(String filePath) async {
       return [];
     }
   }
+
+  Future<void> deleteOldPasswordHistory(DateTime cutoffDate) async {
+    var historyBox = await CacheManager<HistoryModel>().getBoxAsync(CacheTypes.historyInfoBox.name);
+    var historyEntries = historyBox.values.toList();
+    for (var historyEntry in historyEntries) {
+      if (historyEntry.timestamp.isBefore(cutoffDate)) {
+        await historyBox.delete(historyEntry.historyId);
+      }
+    }
+  }
 }

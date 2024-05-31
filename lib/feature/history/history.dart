@@ -11,17 +11,44 @@ import 'package:password_vault/feature/widget_utils/custom_empty_state_illustart
 import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/singletons/theme_change_manager.dart';
 
-final passwordHistoryProvider = FutureProvider<List<HistoryModel>>((ref) async {
-  return await CacheService().getPasswordHistory();
+final filterProvider = StateProvider<String>((ref) => 'Past Week');
+
+final filteredPasswordHistoryProvider = FutureProvider<List<HistoryModel>>((ref) async {
+  final filter = ref.watch(filterProvider);
+  final allHistory = await CacheService().getPasswordHistory();
+  final now = DateTime.now();
+
+  List<HistoryModel> filteredHistory;
+  switch (filter) {
+    case 'Past Week':
+      filteredHistory =
+          allHistory.where((item) => now.difference(item.timestamp).inDays <= 7).toList();
+      break;
+    case 'Past Month':
+      filteredHistory =
+          allHistory.where((item) => now.difference(item.timestamp).inDays <= 30).toList();
+      break;
+    case 'Past Six Months':
+      filteredHistory =
+          allHistory.where((item) => now.difference(item.timestamp).inDays <= 182).toList();
+      break;
+    default:
+      filteredHistory = allHistory;
+  }
+
+  // Delete records older than 6 months from cache
+  final cutoffDate = now.subtract(const Duration(days: 182));
+  await CacheService().deleteOldPasswordHistory(cutoffDate);
+
+  return filteredHistory;
 });
 
 class History extends ConsumerWidget {
   const History({super.key});
 
   void _loadHistory(WidgetRef ref) {
-    //ref.refresh(passwordHistoryProvider);
-    ref.invalidate(passwordHistoryProvider);
-    ref.read(passwordHistoryProvider);
+    ref.invalidate(filteredPasswordHistoryProvider);
+    ref.read(filteredPasswordHistoryProvider);
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -38,6 +65,7 @@ class History extends ConsumerWidget {
     var width = AppStyles.viewWidth(context);
     bool isPortrait = AppStyles.isPortraitMode(context);
     final themeChange = ref.watch(themeChangeProvider);
+    final filter = ref.watch(filterProvider);
 
     if (ref.watch(deletePasswordNotifierProvider) ||
         ref.watch(clearAllDataNotifierProvider) ||
@@ -55,8 +83,38 @@ class History extends ConsumerWidget {
           'History',
           style: AppStyles.appHeaderTextStyle(context, isPortrait),
         ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: width * 0.04),
+            child: DropdownButton<String>(
+              value: filter,
+              icon: Icon(
+                Icons.filter_list_rounded,
+                color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.grey_700,
+                size: width * 0.035,
+              ),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  ref.read(filterProvider.notifier).state = newValue;
+                  _loadHistory(ref);
+                }
+              },
+              items: <String>['Past Week', 'Past Month', 'Past Six Months']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(
+                    value,
+                    style: AppStyles.customText(context,
+                        sizeFactor: 0.031, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.grey_700, weight: FontWeight.w600),
+                  ),
+                );
+              }).toList(),
+            ),
+          )
+        ],
       ),
-      body: ref.watch(passwordHistoryProvider).when(
+      body: ref.watch(filteredPasswordHistoryProvider).when(
             data: (historyList) {
               if (historyList.isEmpty) {
                 return const EmptyStateIllustration(

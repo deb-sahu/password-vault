@@ -75,11 +75,13 @@ class AppStyles {
     double? sizeFactor, // MediaQuery size factor
     String? family,
     FontWeight? weight,
+    TextDecoration? decoration,
   }) {
     return TextStyle(
       fontSize: MediaQuery.of(context).size.width * (sizeFactor ?? 0.035),
       fontWeight: weight ?? FontWeight.w400,
       color: color ?? Colors.black,
+      decoration: decoration ?? TextDecoration.none,
     );
   }
 

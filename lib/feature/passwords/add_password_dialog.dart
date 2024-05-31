@@ -68,26 +68,48 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
       return;
     }
     var passwordId = '';
+    PasswordModel passwordModel;
 
     // Check if passwordId exists
     var passwordExists = await CacheService().checkPasswordIdExists(_passwordId);
+
+    // Password exists, update the PasswordModel instance
     if (passwordExists) {
       passwordId = _passwordId;
       _isEditMode = true;
-    } else {
-      passwordId = const Uuid().v4();
-    }
 
-    // Create a new PasswordModel instance
-    var passwordModel = PasswordModel(
-      passwordId: passwordId,
-      passwordTitle: _titleController.text,
-      siteLink: _linkController.text,
-      savedPassword: _passwordController.text,
-      passwordDescription: _descriptionController.text,
-      createdAt: DateTime.now(),
-      modifiedAt: DateTime.now(),
-    );
+      // Edited PasswordModel instance
+      passwordModel = PasswordModel(
+        passwordId: passwordId,
+        passwordTitle: _titleController.text,
+        siteLink: _linkController.text,
+        savedPassword: _passwordController.text,
+        passwordDescription: _descriptionController.text,
+        createdAt: widget.passwordModel?.createdAt ?? DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+
+      // Log password history
+      await CacheService().logPasswordHistory(passwordModel, 'updated');
+    }
+    // Password does not exist, create a new PasswordModel instance
+    else {
+      passwordId = const Uuid().v4();
+
+      // New PasswordModel instance
+      passwordModel = PasswordModel(
+        passwordId: passwordId,
+        passwordTitle: _titleController.text,
+        siteLink: _linkController.text,
+        savedPassword: _passwordController.text,
+        passwordDescription: _descriptionController.text,
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      
+      // Log password history
+      await CacheService().logPasswordHistory(passwordModel, 'added');
+    }
 
     // Save the PasswordModel instance using Hive
     CacheService().addEditPassword(passwordModel).then((success) {
@@ -154,9 +176,11 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
             ),
             SizedBox(height: height * 0.03),
             TextField(
-              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
-                          ? AppColor.whiteColor
-                          : AppColor.blackColor),
+              style: AppStyles.customText(context,
+                  sizeFactor: 0.035,
+                  color: ThemeChangeService().getThemeChangeValue()
+                      ? AppColor.whiteColor
+                      : AppColor.blackColor),
               controller: _titleController,
               spellCheckConfiguration:
                   SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
@@ -170,9 +194,11 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
             ),
             SizedBox(height: height * 0.02),
             TextField(
-              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
-                          ? AppColor.whiteColor
-                          : AppColor.blackColor),
+              style: AppStyles.customText(context,
+                  sizeFactor: 0.035,
+                  color: ThemeChangeService().getThemeChangeValue()
+                      ? AppColor.whiteColor
+                      : AppColor.blackColor),
               spellCheckConfiguration:
                   SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
               controller: _linkController,
@@ -187,9 +213,11 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
             ),
             SizedBox(height: height * 0.02),
             TextField(
-              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
-                          ? AppColor.whiteColor
-                          : AppColor.blackColor),
+              style: AppStyles.customText(context,
+                  sizeFactor: 0.035,
+                  color: ThemeChangeService().getThemeChangeValue()
+                      ? AppColor.whiteColor
+                      : AppColor.blackColor),
               controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -208,9 +236,11 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
             ),
             SizedBox(height: height * 0.02),
             TextField(
-              style: AppStyles.customText(context, sizeFactor: 0.035, color: ThemeChangeService().getThemeChangeValue()
-                          ? AppColor.whiteColor
-                          : AppColor.blackColor),
+              style: AppStyles.customText(context,
+                  sizeFactor: 0.035,
+                  color: ThemeChangeService().getThemeChangeValue()
+                      ? AppColor.whiteColor
+                      : AppColor.blackColor),
               spellCheckConfiguration:
                   SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
               controller: _descriptionController,

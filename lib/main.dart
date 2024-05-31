@@ -3,32 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_vault/cache/cache_manager.dart';
 import 'package:password_vault/cache/hive_models/favourites_model.dart';
+import 'package:password_vault/cache/hive_models/history_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/cache/hive_models/system_preferences_model.dart';
-import 'package:password_vault/service/singletons/camera_description_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:camera/camera.dart';
 import 'app_container.dart';
 //import 'package:device_preview/device_preview.dart';
-
-List<CameraDescription> cameras = [];
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    cameras = await availableCameras();
-    CameraDescriptionHelperService().setAvailableCameras(cameras);
     await requestPermissions([
       Permission.storage,
-      Permission.camera,
       Permission.manageExternalStorage,
-      Permission.photos,
-      Permission.mediaLibrary,
       // Add more permissions here as needed.
     ]);
   } on Exception catch (e) {
@@ -60,10 +52,12 @@ void main() async {
   Hive.registerAdapter(PasswordModelAdapter());
   Hive.registerAdapter(FavoritesModelAdapter());
   Hive.registerAdapter(SystemPreferencesModelAdapter());
+  Hive.registerAdapter(HistoryModelAdapter());
 
   await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
   await CacheManager<FavoritesModel>().getBoxAsync(CacheTypes.favouritesInfoBox.name);
   await CacheManager<SystemPreferencesModel>().getBoxAsync(CacheTypes.systemInfoBox.name);
+  await CacheManager<HistoryModel>().getBoxAsync(CacheTypes.historyInfoBox.name);
 
   HttpOverrides.global = MyHttpOverrides();
   await SystemChrome.setPreferredOrientations([

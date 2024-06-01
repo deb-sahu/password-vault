@@ -40,6 +40,9 @@ final filteredPasswordHistoryProvider = FutureProvider<List<HistoryModel>>((ref)
   final cutoffDate = now.subtract(const Duration(days: 182));
   await CacheService().deleteOldPasswordHistory(cutoffDate);
 
+  // Sort history in descending order of timestamp
+  filteredHistory.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
   return filteredHistory;
 });
 

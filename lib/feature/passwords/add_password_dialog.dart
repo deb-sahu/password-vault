@@ -67,63 +67,45 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
       AppStyles.showError(context, 'Please fill all fields.');
       return;
     }
-    var passwordId = '';
-    PasswordModel passwordModel;
 
-    // Check if passwordId exists
-    var passwordExists = await CacheService().checkPasswordIdExists(_passwordId);
+    try {
+      var passwordId = _passwordId;
+      PasswordModel passwordModel;
 
-    // Password exists, update the PasswordModel instance
-    if (passwordExists) {
-      passwordId = _passwordId;
-      _isEditMode = true;
+      // Check if passwordId exists
+      var passwordExists = await CacheService().checkPasswordIdExists(passwordId);
 
-      // Edited PasswordModel instance
+      // Create or update PasswordModel instance
       passwordModel = PasswordModel(
-        passwordId: passwordId,
+        passwordId: passwordExists ? passwordId : const Uuid().v4(),
         passwordTitle: _titleController.text,
         siteLink: _linkController.text,
         savedPassword: _passwordController.text,
         passwordDescription: _descriptionController.text,
-        createdAt: widget.passwordModel?.createdAt ?? DateTime.now(),
+        createdAt:
+            passwordExists ? widget.passwordModel?.createdAt ?? DateTime.now() : DateTime.now(),
         modifiedAt: DateTime.now(),
       );
 
       // Log password history
-      await CacheService().logPasswordHistory(passwordModel, 'updated');
-    }
-    // Password does not exist, create a new PasswordModel instance
-    else {
-      passwordId = const Uuid().v4();
+      await CacheService().logPasswordHistory(passwordModel, passwordExists ? 'updated' : 'added');
 
-      // New PasswordModel instance
-      passwordModel = PasswordModel(
-        passwordId: passwordId,
-        passwordTitle: _titleController.text,
-        siteLink: _linkController.text,
-        savedPassword: _passwordController.text,
-        passwordDescription: _descriptionController.text,
-        createdAt: DateTime.now(),
-        modifiedAt: DateTime.now(),
-      );
-      
-      // Log password history
-      await CacheService().logPasswordHistory(passwordModel, 'added');
-    }
-
-    // Save the PasswordModel instance using Hive
-    CacheService().addEditPassword(passwordModel).then((success) {
-      if (success) {
-        _isEditMode
-            ? AppStyles.showSuccess(context, 'Password updated successfully.')
-            : AppStyles.showSuccess(context, 'Password added successfully.');
-        widget.onSuccess(); // Callback function
-        ref.read(updatePasswordProvider.notifier).update((state) => true);
-        Navigator.pop(context);
-      } else {
-        AppStyles.showError(context, 'Failed to add password. Please try again.');
+      // Save the PasswordModel instance using Hive
+      bool success = await CacheService().addEditPassword(passwordModel);
+      if (context.mounted) {
+        if (success) {
+          AppStyles.showSuccess(context,
+              passwordExists ? 'Password updated successfully.' : 'Password added successfully.');
+          widget.onSuccess(); // Callback function
+          ref.read(updatePasswordProvider.notifier).update((state) => true);
+          Navigator.pop(context);
+        } else {
+          AppStyles.showError(context, 'Failed to add password. Please try again.');
+        }
       }
-    });
+    } catch (e) {
+      AppStyles.showError(context, 'An error occurred. Please try again.');
+    }
   }
 
   @override

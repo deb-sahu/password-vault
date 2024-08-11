@@ -201,7 +201,7 @@ class _HomeState extends ConsumerState<Home> {
                               ),
                               SizedBox(height: height * 0.01),
                               Text(
-                                favoritePasswords[index].passwordDescription,
+                                favoritePasswords[index].passwordDescription ?? '',
                                 style: AppStyles.customText(context,
                                     color: ThemeChangeService().getThemeChangeValue()
                                         ? AppColor.whiteColor

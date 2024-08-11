@@ -19,9 +19,9 @@ class PasswordModelAdapter extends TypeAdapter<PasswordModel> {
     return PasswordModel(
       passwordId: fields[0] as String,
       passwordTitle: fields[1] as String,
-      siteLink: fields[2] as String,
+      siteLink: fields[2] as String?,
       savedPassword: fields[3] as String,
-      passwordDescription: fields[4] as String,
+      passwordDescription: fields[4] as String?,
       createdAt: fields[5] as DateTime?,
       modifiedAt: fields[6] as DateTime?,
     );

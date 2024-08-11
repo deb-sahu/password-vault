@@ -290,9 +290,9 @@ Future<bool> importDataFromFile(String filePath) async {
         action: action,
         timestamp: DateTime.now(),
         passwordTitle: password.passwordTitle,
-        siteLink: password.siteLink,
+        siteLink: password.siteLink ?? '',
         savedPassword: password.savedPassword,
-        passwordDescription: password.passwordDescription,
+        passwordDescription: password.passwordDescription ?? '',
       );
       await historyBox.put(historyEntry.historyId, historyEntry);
     } catch (e) {

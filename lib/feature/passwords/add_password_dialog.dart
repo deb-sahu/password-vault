@@ -42,6 +42,11 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
         TextEditingController(text: widget.passwordModel?.passwordDescription ?? '');
     _passwordId = widget.passwordModel?.passwordId ?? '';
     _isEditMode = widget.passwordModel != null;
+
+    // Check password strength on initialization if there's already a password
+    if (_passwordController.text.isNotEmpty) {
+      _checkPasswordStrength(_passwordController.text);
+    }
   }
 
   @override
@@ -61,10 +66,7 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
 
   void _savePassword(BuildContext context) async {
     // Validate fields
-    if (_titleController.text.isEmpty ||
-        _linkController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _descriptionController.text.isEmpty) {
+    if (_titleController.text.isEmpty || _passwordController.text.isEmpty) {
       AppStyles.showError(context, 'Please fill all fields.');
       return;
     }
@@ -106,48 +108,41 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
       }
     } catch (e) {
       if (context.mounted) {
-      AppStyles.showError(context, 'An error occurred. Please try again.');
+        AppStyles.showError(context, 'An error occurred. Please try again.');
       }
     }
   }
 
-  String _passwordStrength = '';
-  Color _strengthColor = Colors.grey;
+  String _passwordStrengthText = '';
+  Color _passwordStrengthColor = Colors.transparent;
 
   void _checkPasswordStrength(String password) {
-    int score = 0;
+    int strength = 0;
 
-    if (password.length >= 8) score++;
-    if (RegExp(r'[A-Z]').hasMatch(password)) score++;
-    if (RegExp(r'[a-z]').hasMatch(password)) score++;
-    if (RegExp(r'[0-9]').hasMatch(password)) score++;
-    if (RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password)) score++;
+    if (password.length >= 8) strength++;
+    if (RegExp(r'[A-Z]').hasMatch(password)) strength++;
+    if (RegExp(r'[a-z]').hasMatch(password)) strength++;
+    if (RegExp(r'[0-9]').hasMatch(password)) strength++;
+    if (RegExp(r'[!@#\$&*~]').hasMatch(password)) strength++;
 
-    switch (score) {
-      case 0:
-      case 1:
-        _passwordStrength = 'Very Weak';
-        _strengthColor = Colors.red;
-        break;
-      case 2:
-        _passwordStrength = 'Weak';
-        _strengthColor = Colors.orange;
-        break;
-      case 3:
-        _passwordStrength = 'Medium';
-        _strengthColor = Colors.amber;
-        break;
-      case 4:
-        _passwordStrength = 'Strong';
-        _strengthColor = Colors.lightGreen;
-        break;
-      case 5:
-        _passwordStrength = 'Very Strong';
-        _strengthColor = Colors.green;
-        break;
-    }
-
-    setState(() {});
+    setState(() {
+      if (strength < 3) {
+        _passwordStrengthText = 'Very Weak';
+        _passwordStrengthColor = Colors.red;
+      } else if (strength == 3) {
+        _passwordStrengthText = 'Weak';
+        _passwordStrengthColor = Colors.orange;
+      } else if (strength == 4) {
+        _passwordStrengthText = 'Medium';
+        _passwordStrengthColor = Colors.amber;
+      } else if (strength == 5) {
+        _passwordStrengthText = 'Strong';
+        _passwordStrengthColor = Colors.lightGreen;
+      } else {
+        _passwordStrengthText = 'Very Strong';
+        _passwordStrengthColor = Colors.green;
+      }
+    });
   }
 
   @override
@@ -209,7 +204,13 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
               spellCheckConfiguration:
                   SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
               decoration: InputDecoration(
-                  labelText: 'Title',
+                  labelText: 'Title*',
+                  hintText: 'Enter title e.g. Facebook, Google, etc.',
+                  hintStyle: AppStyles.customText(context,
+                      sizeFactor: 0.035,
+                      color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.darkGrey),
                   labelStyle: AppStyles.customText(context,
                       sizeFactor: 0.035,
                       color: ThemeChangeService().getThemeChangeValue()
@@ -228,12 +229,18 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
               controller: _linkController,
               decoration: InputDecoration(
                   labelText: 'Website',
+                  hintText: 'Enter website link e.g. www.example.com',
+                  hintStyle: AppStyles.customText(context,
+                      sizeFactor: 0.035,
+                      color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.darkGrey),
                   labelStyle: AppStyles.customText(context,
                       sizeFactor: 0.035,
                       color: ThemeChangeService().getThemeChangeValue()
                           ? AppColor.whiteColor
                           : AppColor.blackColor),
-                  hintText: AutofillHints.url),
+                  ),
             ),
             SizedBox(height: height * 0.02),
             TextField(
@@ -244,7 +251,13 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
                       : AppColor.blackColor),
               controller: _passwordController,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: 'Password*',
+                hintText: 'Enter password',
+                hintStyle: AppStyles.customText(context,
+                    sizeFactor: 0.035,
+                    color: ThemeChangeService().getThemeChangeValue()
+                        ? AppColor.whiteColor
+                        : AppColor.darkGrey),
                 labelStyle: AppStyles.customText(context,
                     sizeFactor: 0.035,
                     color: ThemeChangeService().getThemeChangeValue()
@@ -271,7 +284,9 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
                 ),
               ),
               obscureText: _isObscured,
-              onChanged: _checkPasswordStrength,
+              onChanged: (password) {
+                _checkPasswordStrength(password);
+              },
             ),
             SizedBox(height: height * 0.01),
             Text(
@@ -284,8 +299,9 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
             ),
             SizedBox(height: height * 0.01),
             Text(
-              'Password Strength: $_passwordStrength',
-              style: AppStyles.customText(context, sizeFactor: 0.03, color: _strengthColor),
+              'Password Strength: $_passwordStrengthText',
+              style: AppStyles.customText(context,
+                  sizeFactor: 0.028, color: _passwordStrengthColor, weight: FontWeight.bold),
             ),
             SizedBox(height: height * 0.02),
             TextField(
@@ -299,6 +315,12 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
               controller: _descriptionController,
               decoration: InputDecoration(
                   labelText: 'Description',
+                  hintText: 'Enter description',
+                  hintStyle: AppStyles.customText(context,
+                      sizeFactor: 0.035,
+                      color: ThemeChangeService().getThemeChangeValue()
+                          ? AppColor.whiteColor
+                          : AppColor.darkGrey),
                   labelStyle: AppStyles.customText(context,
                       sizeFactor: 0.035,
                       color: ThemeChangeService().getThemeChangeValue()

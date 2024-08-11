@@ -20,17 +20,20 @@ class SystemPreferencesModelAdapter
     return SystemPreferencesModel(
       id: fields[0] as int,
       isDarkMode: fields[1] as bool,
+      isFirstLogin: fields[2] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, SystemPreferencesModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.isDarkMode);
+      ..write(obj.isDarkMode)
+      ..writeByte(2)
+      ..write(obj.isFirstLogin);
   }
 
   @override

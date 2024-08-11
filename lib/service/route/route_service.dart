@@ -1,33 +1,31 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:password_vault/cache/hive_models/passwords_model.dart';
+import 'package:password_vault/feature/auth/auth.dart';
 import 'package:password_vault/feature/auth/login.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/route/bottom_nav_route.dart';
 
-final passwordsProvider = FutureProvider<List<PasswordModel>>((ref) async {
-  // Load favourites from cache
-  List<PasswordModel> favourites = [];
-  favourites = await CacheService().getPasswordsData();
-  return favourites;
+final loginProvider = FutureProvider<bool>((ref) async {
+  var isFirstLogin = await CacheService().checkIsFirstLogin();
+  return isFirstLogin;
 });
-
-
 final navigatorKey = GlobalKey<NavigatorState>();
+
 GoRouter createRouter(BuildContext context, WidgetRef ref) {
-  
-  bool checkData()  {
-  var passwords=  [];
-  ref.watch(passwordsProvider).whenData((value) {
-    passwords = value;
+
+  bool checkFirstLogin()  {
+  var isFirstLogin = true;
+  ref.watch(loginProvider).whenData((value) {
+    isFirstLogin = value;
   });
-  return passwords.isNotEmpty;
+  return isFirstLogin;
 }
 
   return GoRouter(
     navigatorKey: navigatorKey,
-    initialLocation: checkData() ? '/homePage' : '/login',
+    initialLocation: checkFirstLogin() ? '/login' : '/auth',
+   //initialLocation: '/login',
     routes: <RouteBase>[
       GoRoute(
         path: '/',
@@ -52,7 +50,13 @@ GoRouter createRouter(BuildContext context, WidgetRef ref) {
             builder: (BuildContext context, GoRouterState state) {
               return const NavRoute(); // Passwords page route with selectedIndex 1
             },
-          )
+          ),
+          GoRoute(
+            path: 'auth',
+            builder: (BuildContext context, GoRouterState state) {
+              return const AuthScreen(); // Auth page route
+            },
+          ),
         ],
       ),
     ],

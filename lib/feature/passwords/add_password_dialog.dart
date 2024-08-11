@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:password_vault/app_container.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
+import 'package:password_vault/feature/passwords/password_generation_algorithm.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/singletons/theme_change_manager.dart';
 import 'package:uuid/uuid.dart';
@@ -104,8 +105,49 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
         }
       }
     } catch (e) {
+      if (context.mounted) {
       AppStyles.showError(context, 'An error occurred. Please try again.');
+      }
     }
+  }
+
+  String _passwordStrength = '';
+  Color _strengthColor = Colors.grey;
+
+  void _checkPasswordStrength(String password) {
+    int score = 0;
+
+    if (password.length >= 8) score++;
+    if (RegExp(r'[A-Z]').hasMatch(password)) score++;
+    if (RegExp(r'[a-z]').hasMatch(password)) score++;
+    if (RegExp(r'[0-9]').hasMatch(password)) score++;
+    if (RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password)) score++;
+
+    switch (score) {
+      case 0:
+      case 1:
+        _passwordStrength = 'Very Weak';
+        _strengthColor = Colors.red;
+        break;
+      case 2:
+        _passwordStrength = 'Weak';
+        _strengthColor = Colors.orange;
+        break;
+      case 3:
+        _passwordStrength = 'Medium';
+        _strengthColor = Colors.amber;
+        break;
+      case 4:
+        _passwordStrength = 'Strong';
+        _strengthColor = Colors.lightGreen;
+        break;
+      case 5:
+        _passwordStrength = 'Very Strong';
+        _strengthColor = Colors.green;
+        break;
+    }
+
+    setState(() {});
   }
 
   @override
@@ -208,13 +250,42 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
                     color: ThemeChangeService().getThemeChangeValue()
                         ? AppColor.whiteColor
                         : AppColor.blackColor),
-                suffixIcon: IconButton(
-                  onPressed: _togglePasswordVisibility,
-                  icon:
-                      _isObscured ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: _togglePasswordVisibility,
+                      icon: _isObscured
+                          ? const Icon(Icons.visibility)
+                          : const Icon(Icons.visibility_off),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        String newPassword = generateStrongPassword();
+                        _passwordController.text = newPassword;
+                        _checkPasswordStrength(newPassword);
+                      },
+                      icon: const Icon(Icons.password_rounded), // Suggestion icon
+                    ),
+                  ],
                 ),
               ),
               obscureText: _isObscured,
+              onChanged: _checkPasswordStrength,
+            ),
+            SizedBox(height: height * 0.01),
+            Text(
+              'Select the right icon to autofill with a suggested strong password.',
+              style: AppStyles.customText(context,
+                  sizeFactor: 0.025,
+                  color: ThemeChangeService().getThemeChangeValue()
+                      ? AppColor.whiteColor
+                      : AppColor.blackColor),
+            ),
+            SizedBox(height: height * 0.01),
+            Text(
+              'Password Strength: $_passwordStrength',
+              style: AppStyles.customText(context, sizeFactor: 0.03, color: _strengthColor),
             ),
             SizedBox(height: height * 0.02),
             TextField(

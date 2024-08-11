@@ -176,6 +176,32 @@ class CacheService {
     }
   }
 
+  Future<bool> checkIsFirstLogin() async {
+    try {
+      var themeModeBox =
+          await CacheManager<SystemPreferencesModel>().getBoxAsync(CacheTypes.systemInfoBox.name);
+      var systemPreferencesModel = themeModeBox.get(0);
+      return systemPreferencesModel?.isFirstLogin ?? true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  Future<void> updateFirstLogin(bool val) async {
+    try {
+      var themeModeBox =
+          await CacheManager<SystemPreferencesModel>().getBoxAsync(CacheTypes.systemInfoBox.name);
+      var systemPreferencesModel = themeModeBox.get(0);
+      systemPreferencesModel ??= SystemPreferencesModel(id: 0, isDarkMode: false);
+      systemPreferencesModel.isFirstLogin = val;
+      await themeModeBox.put(0, systemPreferencesModel);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in updating first login: $e');
+      }
+    }
+  }
+
   Future<bool> exportAllData() async {
     try {
       final passwordsInfo = await getPasswordsData();

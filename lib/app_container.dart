@@ -23,7 +23,7 @@ class PasswordVault extends ConsumerWidget {
     ThemeChangeService().initializeThemeChange(ref, themeChange);
 
     return MaterialApp.router(
-      title: 'Audit Safe',
+      title: 'Password Vault',
       debugShowCheckedModeBanner: false,
       locale: const Locale('en', ''),
       supportedLocales: const [

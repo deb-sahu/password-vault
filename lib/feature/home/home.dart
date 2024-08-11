@@ -37,6 +37,7 @@ class _HomeState extends ConsumerState<Home> {
 
   Future<void> _loadFavourites() async {
     try {
+      await CacheService().updateFirstLogin(false); // Update first login to false after first login
       favoritePasswords = await CacheService().getFavouritesData();
       ref.read(deletePasswordNotifierProvider.notifier).update((state) => false);
       ref.read(changeFavoritesdNotifierProvider.notifier).update((state) => false);

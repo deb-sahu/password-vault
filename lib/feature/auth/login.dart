@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:password_vault/constants/common_exports.dart';
 
@@ -12,6 +14,8 @@ class Login extends ConsumerStatefulWidget {
 class _LoginState extends ConsumerState<Login> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _isGifPlaying = true;
+  late Timer _timer;
 
   @override
   void initState() {
@@ -25,11 +29,22 @@ class _LoginState extends ConsumerState<Login> with SingleTickerProviderStateMix
       end: 1,
     ).animate(_controller);
     _controller.forward();
+
+    // Initialize the timer to navigate after the GIF finishes
+    _timer = Timer(const Duration(seconds: 4), () {
+      if (mounted) {
+        setState(() {
+          _isGifPlaying = false;
+        });
+        GoRouter.of(context).go('/homePage');
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _timer.cancel();
     super.dispose();
   }
 
@@ -61,7 +76,7 @@ class _LoginState extends ConsumerState<Login> with SingleTickerProviderStateMix
           Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-              automaticallyImplyLeading: false, // Commented to go back to main content without login
+              automaticallyImplyLeading: false,
               backgroundColor: Colors.transparent,
             ),
             body: SafeArea(
@@ -88,28 +103,20 @@ class _LoginState extends ConsumerState<Login> with SingleTickerProviderStateMix
                   Flexible(
                     child: SizedBox(height: height * 0.8),
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ElevatedButton(
-                        style: AppStyles.buttonPrimaryElevated,
-                        onPressed: () {
-                          GoRouter.of(context).go('/homePage');
-                        },
-                        child: Text(
-                          'Continue',
-                          style: AppStyles.loginText(context, true),
-                        ),
-                      ),
-                    ],
+                  Center(
+                    child: _isGifPlaying
+                        ? Image.asset(
+                            'assets/gifs/padlock.gif',
+                            width: width * 0.2,
+                            height: height * 0.2,
+                          )
+                        : Container(),
                   ),
-                  SizedBox(height: height * 0.02),
                   Text(
-                    'Let\'s get started!',
+                    'Safe, Secure, Simple',
                     style: AppStyles.customText(context, sizeFactor: 0.039, family: 'OpenSans'),
                     textAlign: TextAlign.center,
-                  )
+                  ),
                 ],
               ),
             ),

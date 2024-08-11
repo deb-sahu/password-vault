@@ -10,5 +10,8 @@ int id;
 @HiveField(1)
 bool isDarkMode;
 
-SystemPreferencesModel({required this.id, required this.isDarkMode});
+@HiveField(2)
+bool? isFirstLogin;
+
+SystemPreferencesModel({required this.id, required this.isDarkMode, this.isFirstLogin});
 }

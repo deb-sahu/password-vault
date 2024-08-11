@@ -10,13 +10,13 @@ class PasswordModel {
   String passwordTitle;
 
   @HiveField(2)
-  String siteLink;
+  String? siteLink;
 
   @HiveField(3)
   String savedPassword;
 
   @HiveField(4)
-  String passwordDescription;
+  String? passwordDescription;
 
   @HiveField(5)
   DateTime? createdAt;

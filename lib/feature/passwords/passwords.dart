@@ -229,10 +229,11 @@ class _PasswordsState extends ConsumerState<Passwords> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    if (password.siteLink != null && password.siteLink!.isNotEmpty) ...{
                                     GestureDetector(
-                                      onTap: () => _openWebPage(password.siteLink),
+                                      onTap: () => _openWebPage(password.siteLink ?? ''),
                                       child: Text(
-                                        password.siteLink,
+                                        password.siteLink ?? '',
                                         style: AppStyles.customText(
                                           context,
                                           sizeFactor: 0.038,
@@ -244,6 +245,9 @@ class _PasswordsState extends ConsumerState<Passwords> {
                                         ),
                                       ),
                                     ),
+                                    } else ...{
+                                      const SizedBox(),
+                                    },
                                     SizedBox(height: height * 0.02),
                                     TextField(
                                       style: AppStyles.customText(context,

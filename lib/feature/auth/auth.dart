@@ -36,8 +36,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _initializeAuth() async {
-    await _checkDeviceSupport();
     await _checkData();
+    await _checkDeviceSupport();
   }
 
   Future<void> _checkDeviceSupport() async {

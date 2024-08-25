@@ -67,7 +67,7 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
   void _savePassword(BuildContext context) async {
     // Validate fields
     if (_titleController.text.isEmpty || _passwordController.text.isEmpty) {
-      AppStyles.showError(context, 'Please fill all fields.');
+      AppStyles.showError(context, 'Please fill all the required fields.');
       return;
     }
 

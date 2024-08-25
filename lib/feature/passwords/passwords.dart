@@ -10,6 +10,7 @@ import 'package:password_vault/feature/settings/settings.dart';
 import 'package:password_vault/feature/widget_utils/custom_empty_state_illustartion.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/singletons/theme_change_manager.dart';
+import 'package:password_vault/theme/app_style.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/common_exports.dart';
 
@@ -122,7 +123,7 @@ class _PasswordsState extends ConsumerState<Passwords> {
       return true;
     } catch (e) {
       return false;
-    }   
+    }
   }
 
   void _openWebPage(String url) async {
@@ -229,22 +230,23 @@ class _PasswordsState extends ConsumerState<Passwords> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (password.siteLink != null && password.siteLink!.isNotEmpty) ...{
-                                    GestureDetector(
-                                      onTap: () => _openWebPage(password.siteLink ?? ''),
-                                      child: Text(
-                                        password.siteLink ?? '',
-                                        style: AppStyles.customText(
-                                          context,
-                                          sizeFactor: 0.038,
-                                          weight: FontWeight.w600,
-                                          color: ThemeChangeService().getThemeChangeValue()
-                                              ? AppColor.primaryColor
-                                              : AppColor
-                                                  .themeBlueMid, // Color to indicate it's a link
+                                    if (password.siteLink != null &&
+                                        password.siteLink!.isNotEmpty) ...{
+                                      GestureDetector(
+                                        onTap: () => _openWebPage(password.siteLink ?? ''),
+                                        child: Text(
+                                          password.siteLink ?? '',
+                                          style: AppStyles.customText(
+                                            context,
+                                            sizeFactor: 0.038,
+                                            weight: FontWeight.w600,
+                                            color: ThemeChangeService().getThemeChangeValue()
+                                                ? AppColor.primaryColor
+                                                : AppColor
+                                                    .themeBlueMid, // Color to indicate it's a link
+                                          ),
                                         ),
                                       ),
-                                    ),
                                     } else ...{
                                       const SizedBox(),
                                     },
@@ -265,15 +267,16 @@ class _PasswordsState extends ConsumerState<Passwords> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             IconButton(
-                                              onPressed: (){
-                                               bool res = _copyToClipboard(password.savedPassword);
-                                                if(res){
-                                                  AppStyles.showSuccess(context, 'Password copied to clipboard');
+                                              onPressed: () {
+                                                bool res = _copyToClipboard(password.savedPassword);
+                                                if (res) {
+                                                  AppStyles.showSuccess(
+                                                      context, 'Password copied to clipboard');
+                                                } else {
+                                                  AppStyles.showError(context,
+                                                      'Error copying password to clipboard');
                                                 }
-                                                else{
-                                                  AppStyles.showError(context, 'Error copying password to clipboard');
-                                                }
-                                                },
+                                              },
                                               icon: const Icon(Icons.copy),
                                             ),
                                             IconButton(
@@ -297,9 +300,11 @@ class _PasswordsState extends ConsumerState<Passwords> {
                                           color: ThemeChangeService().getThemeChangeValue()
                                               ? AppColor.whiteColor
                                               : AppColor.blackColor),
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'Description',
-                                        border: OutlineInputBorder(),
+                                        labelStyle: AppStyles.customText(context,
+                                            sizeFactor: 0.03, color: AppColor.grey_600),
+                                        border: const OutlineInputBorder(),
                                       ),
                                       readOnly: true,
                                     ),

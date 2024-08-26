@@ -10,7 +10,7 @@
   </intent>
 </queries>
     <application
-        android:label="Password Vault"
+        android:label="Vault"
         android:name="${applicationName}"
         android:roundIcon="@mipmap/round_launcher"
         android:icon="@mipmap/ic_launcher">

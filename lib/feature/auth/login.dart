@@ -90,7 +90,7 @@ class _LoginState extends ConsumerState<Login> with SingleTickerProviderStateMix
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'Vault-Password Manager',
+                        'Dexter-Password Manager',
                         style: AppStyles.headline1(context, true),
                         textAlign: TextAlign.center,
                       ),

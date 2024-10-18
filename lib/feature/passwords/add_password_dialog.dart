@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:password_vault/app_container.dart';
+import 'package:password_vault/cache/hive_models/folder_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
 import 'package:password_vault/feature/passwords/password_generation_algorithm.dart';
@@ -14,9 +15,11 @@ final updatePasswordProvider = StateProvider<bool>((ref) {
 
 class AddPasswordDialog extends ConsumerStatefulWidget {
   final PasswordModel? passwordModel;
+  final FolderModel? folderModel;
   final Function onSuccess; // Callback function
 
-  const AddPasswordDialog({super.key, this.passwordModel, required this.onSuccess});
+  const AddPasswordDialog(
+      {super.key, this.passwordModel, this.folderModel, required this.onSuccess});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -72,15 +75,14 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
     }
 
     try {
-      var passwordId = _passwordId;
-      PasswordModel passwordModel;
-
-      // Check if passwordId exists
-      var passwordExists = await CacheService().checkPasswordIdExists(passwordId);
+      final passwordExists = await CacheService().checkPasswordIdExists(_passwordId);
+      final newPasswordId = const Uuid().v4();
+      final passwordId =
+          passwordExists ? _passwordId : newPasswordId; // Correctly assign passwordId
 
       // Create or update PasswordModel instance
-      passwordModel = PasswordModel(
-        passwordId: passwordExists ? passwordId : const Uuid().v4(),
+      final passwordModel = PasswordModel(
+        passwordId: passwordId,
         passwordTitle: _titleController.text,
         siteLink: _linkController.text,
         savedPassword: _passwordController.text,
@@ -88,13 +90,25 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
         createdAt:
             passwordExists ? widget.passwordModel?.createdAt ?? DateTime.now() : DateTime.now(),
         modifiedAt: DateTime.now(),
+        folderId: passwordExists
+            ? widget.passwordModel?.folderId ?? ''
+            : widget.folderModel?.folderId ?? '',
       );
 
       // Log password history
       await CacheService().logPasswordHistory(passwordModel, passwordExists ? 'updated' : 'added');
 
+      // Add passwordId to folder if new password and folder exists
+      if (!passwordExists && widget.folderModel != null) {
+        final folder = widget.folderModel!;
+        folder.passwordIds.add(newPasswordId);
+        await CacheService().addEditFolder(folder);
+      }
+
       // Save the PasswordModel instance using Hive
-      bool success = await CacheService().addEditPassword(passwordModel);
+      final success = await CacheService().addEditPassword(passwordModel);
+
+      // Handle UI interaction only if the context is still mounted
       if (context.mounted) {
         if (success) {
           AppStyles.showSuccess(context,
@@ -228,19 +242,19 @@ class _AddPasswordDialogState extends ConsumerState<AddPasswordDialog> {
                   SpellCheckConfiguration(spellCheckService: DefaultSpellCheckService()),
               controller: _linkController,
               decoration: InputDecoration(
-                  labelText: 'Website',
-                  hintText: 'Enter website link e.g. www.example.com',
-                  hintStyle: AppStyles.customText(context,
-                      sizeFactor: 0.035,
-                      color: ThemeChangeService().getThemeChangeValue()
-                          ? AppColor.whiteColor
-                          : AppColor.darkGrey),
-                  labelStyle: AppStyles.customText(context,
-                      sizeFactor: 0.035,
-                      color: ThemeChangeService().getThemeChangeValue()
-                          ? AppColor.whiteColor
-                          : AppColor.blackColor),
-                  ),
+                labelText: 'Website',
+                hintText: 'Enter website link e.g. www.example.com',
+                hintStyle: AppStyles.customText(context,
+                    sizeFactor: 0.035,
+                    color: ThemeChangeService().getThemeChangeValue()
+                        ? AppColor.whiteColor
+                        : AppColor.darkGrey),
+                labelStyle: AppStyles.customText(context,
+                    sizeFactor: 0.035,
+                    color: ThemeChangeService().getThemeChangeValue()
+                        ? AppColor.whiteColor
+                        : AppColor.blackColor),
+              ),
             ),
             SizedBox(height: height * 0.02),
             TextField(

@@ -7,6 +7,8 @@ import 'package:password_vault/constants/common_exports.dart';
 import 'package:password_vault/feature/settings/clear_data_dialog.dart';
 import 'package:password_vault/service/cache/cache_service.dart';
 import 'package:password_vault/service/singletons/theme_change_manager.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:uuid/uuid.dart';
 
 final importChangeProvider = StateProvider<bool>((ref) {
   return false;
@@ -31,6 +33,27 @@ class Settings extends ConsumerWidget {
           'Settings',
           style: AppStyles.appHeaderTextStyle(context, isPortrait),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Organize',
+            icon: Icon(
+              Icons.headset_mic_outlined,
+              color: AppColor.primaryColor,
+              size: AppStyles.appIconSize(context),
+            ),
+            onPressed: () async {
+              // Direct to my website for support
+              var uri = Uri.parse('https://www.adarsh7.dev');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              } else {
+                if (context.mounted) {
+                  AppStyles.showError(context, 'Could not launch the url');
+                }
+              }
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         minimum: EdgeInsets.all(width * 0.02),
@@ -43,7 +66,14 @@ class Settings extends ConsumerWidget {
               tileColor: ThemeChangeService().getThemeChangeValue()
                   ? AppColor.grey_800
                   : AppColor.grey_200,
-              title: Text('Dark Mode', style: AppStyles.customText(context, sizeFactor: 0.038, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.blackColor),),
+              title: Text(
+                'Dark Mode',
+                style: AppStyles.customText(context,
+                    sizeFactor: 0.038,
+                    color: ThemeChangeService().getThemeChangeValue()
+                        ? AppColor.whiteColor
+                        : AppColor.blackColor),
+              ),
               trailing: Switch(
                 value: ThemeChangeService().getThemeChangeValue(),
                 onChanged: (value) async {
@@ -65,21 +95,22 @@ class Settings extends ConsumerWidget {
                     if (context.mounted) {
                       if (bool) {
                         AppStyles.showSuccess(context, 'Data exported successfully');
-                        if (Platform.isAndroid){
-                           ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Check your downloads folder for the exported data file'),
-                            duration: Duration(seconds: 4),
-                          ),
-                        );
-                        }
-                        else if (Platform.isIOS){
+                        if (Platform.isAndroid) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Check your application directory for the exported data file'),
-                            duration: Duration(seconds: 4),
-                          ),
-                        );
+                            const SnackBar(
+                              content:
+                                  Text('Check your downloads folder for the exported data file'),
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
+                        } else if (Platform.isIOS) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Check your application directory for the exported data file'),
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
                         }
                       } else {
                         AppStyles.showError(context, 'Error in exporting data');
@@ -114,7 +145,7 @@ class Settings extends ConsumerWidget {
                       ? AppStyles.onlyTextButtonDark
                       : AppStyles.onlyTextButtonLight,
                   onPressed: () async {
-                     // Import data from file
+                    // Import data from file
                     FilePickerResult? result = await FilePicker.platform.pickFiles();
                     if (result != null) {
                       String filePath = result.files.single.path!;

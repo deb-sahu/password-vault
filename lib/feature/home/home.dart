@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:password_vault/app_container.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/constants/common_exports.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:password_vault/feature/home/favourites_dialog.dart';
 import 'package:password_vault/feature/passwords/add_password_dialog.dart';
 import 'package:password_vault/feature/passwords/passwords.dart';
@@ -80,9 +79,12 @@ class _HomeState extends ConsumerState<Home> {
               );
             },
             icon: Icon(
-              CupertinoIcons.heart_solid,
+              favoritePasswords.isNotEmpty
+                  ? Icons.favorite_rounded
+                  :
+              Icons.favorite_outline_rounded,
               size: AppStyles.appIconSize(context),
-              color: AppColor.appColor,
+              color: AppColor.primaryColor,
             ),
           )
         ],

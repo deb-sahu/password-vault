@@ -19,4 +19,5 @@ enum CacheTypes {
   favouritesInfoBox,
   systemInfoBox,
   historyInfoBox,
+  folderInfoBox,
 }

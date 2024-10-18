@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:password_vault/cache/cache_manager.dart';
 import 'package:password_vault/cache/hive_models/favourites_model.dart';
+import 'package:password_vault/cache/hive_models/folder_model.dart';
 import 'package:password_vault/cache/hive_models/history_model.dart';
 import 'package:password_vault/cache/hive_models/passwords_model.dart';
 import 'package:password_vault/cache/hive_models/system_preferences_model.dart';
@@ -53,11 +54,13 @@ void main() async {
   Hive.registerAdapter(FavoritesModelAdapter());
   Hive.registerAdapter(SystemPreferencesModelAdapter());
   Hive.registerAdapter(HistoryModelAdapter());
+  Hive.registerAdapter(FolderModelAdapter());
 
   await CacheManager<PasswordModel>().getBoxAsync(CacheTypes.passwordsInfoBox.name);
   await CacheManager<FavoritesModel>().getBoxAsync(CacheTypes.favouritesInfoBox.name);
   await CacheManager<SystemPreferencesModel>().getBoxAsync(CacheTypes.systemInfoBox.name);
   await CacheManager<HistoryModel>().getBoxAsync(CacheTypes.historyInfoBox.name);
+  await CacheManager<FolderModel>().getBoxAsync(CacheTypes.folderInfoBox.name);
 
   HttpOverrides.global = MyHttpOverrides();
   await SystemChrome.setPreferredOrientations([

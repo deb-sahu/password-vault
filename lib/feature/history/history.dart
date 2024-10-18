@@ -91,11 +91,8 @@ class History extends ConsumerWidget {
             padding: EdgeInsets.only(right: width * 0.04),
             child: DropdownButton<String>(
               value: filter,
-              icon: Icon(
-                Icons.filter_list_rounded,
-                color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.grey_700,
-                size: width * 0.035,
-              ),
+              icon: Icon(Icons.sort_rounded,
+                  color: AppColor.primaryColor, size: AppStyles.appIconSize(context)),
               onChanged: (String? newValue) {
                 if (newValue != null) {
                   ref.read(filterProvider.notifier).state = newValue;
@@ -109,7 +106,11 @@ class History extends ConsumerWidget {
                   child: Text(
                     value,
                     style: AppStyles.customText(context,
-                        sizeFactor: 0.031, color: ThemeChangeService().getThemeChangeValue() ? AppColor.whiteColor : AppColor.grey_700, weight: FontWeight.w600),
+                        sizeFactor: 0.031,
+                        color: ThemeChangeService().getThemeChangeValue()
+                            ? AppColor.whiteColor
+                            : AppColor.grey_800,
+                        weight: FontWeight.w600),
                   ),
                 );
               }).toList(),
@@ -169,18 +170,6 @@ class History extends ConsumerWidget {
                           ListTile(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            title: Text(
-                              'Password Details',
-                              style: AppStyles.customText(
-                                context,
-                                sizeFactor: 0.0315,
-                                weight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                                color: ThemeChangeService().getThemeChangeValue()
-                                    ? AppColor.whiteColor
-                                    : AppColor.ultraDarkGrey,
-                              ),
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

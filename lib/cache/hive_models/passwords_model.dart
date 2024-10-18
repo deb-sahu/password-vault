@@ -24,6 +24,9 @@ class PasswordModel {
   @HiveField(6)
   DateTime? modifiedAt;
 
+  @HiveField(7)
+  String? folderId;
+
   // @HiveField(7)
   // Icon? passwordIcon;
 
@@ -35,6 +38,7 @@ class PasswordModel {
     required this.passwordDescription,
     required this.createdAt,
     required this.modifiedAt,
+    this.folderId,
     //required this.passwordIcon,
   });
 
@@ -47,6 +51,7 @@ class PasswordModel {
       'passwordDescription': passwordDescription,
       'createdAt': createdAt?.toIso8601String(), // Convert DateTime to string
       'modifiedAt': modifiedAt?.toIso8601String(), // Convert DateTime to string
+      'folderId': folderId,
     };
   }
 }
